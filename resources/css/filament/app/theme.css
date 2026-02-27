@@ -1,0 +1,24 @@
+@import '../../../../vendor/filament/filament/resources/css/theme.css';
+@import '../../../../vendor/guava/calendar/resources/css/theme.css';
+
+
+@source '../../../../app/Filament/App/**/*';
+@source '../../../../resources/views/filament/app/**/*';
+@source '../../../../vendor/saade/filament-autograph/resources/views/**/*.blade.php';
+@source '../../../../vendor/emmanpbarrameda/filament-take-picture-field/resources/views/**/*.blade.php';
+@source '../../../../resources/views/**/*';
+@source '../../../../vendor/guava/calendar/resources/**/*';
+
+.no-history-row,
+.no-history-row td {
+    background-color: rgb(254 249 195) !important;
+}
+
+:is(.dark .no-history-row),
+:is(.dark .no-history-row) td {
+    background-color: rgb(113 63 18 / 0.15) !important;
+}
+
+canvas[x-ref="canvas"] {
+    height: 42rem !important;
+}

@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(php artisan make:migration:*)",
+      "Bash(dir \"f:\\\\Laravel\\\\New\\\\arya\\\\app\\\\Filament\\\\App\\\\Resources\\\\Patients\\\\Resources\\\\PatientHistories\")"
+    ]
+  }
+}

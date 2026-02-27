@@ -1,0 +1,17 @@
+{
+    "_hash": "c61ceb189b54922d7e571e99f4a1cbba1caeefaddbe62475c64e5ab392eac653",
+    "patches": {
+        "saade/filament-autograph": [
+            {
+                "package": "saade/filament-autograph",
+                "description": "Stop clearing signature on edit",
+                "url": "patches/prevent-clear.patch",
+                "sha256": "41e3edf47f2f642fbc8aa4d82960d21488be168d36471b95a22c43e66c9d2f78",
+                "depth": 1,
+                "extra": {
+                    "provenance": "root"
+                }
+            }
+        ]
+    }
+}

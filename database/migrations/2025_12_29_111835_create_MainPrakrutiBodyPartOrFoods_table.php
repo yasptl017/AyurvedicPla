@@ -1,0 +1,37 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration {
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('MainPrakrutiBodyPartOrFoods', function (Blueprint $table) {
+            $table->increments('Id');
+            $table->dateTime('CreatedDate')->nullable();
+            $table->uuid('CreatedBy');
+            $table->dateTime('ModifiedDate')->nullable();
+            $table->uuid('ModifiedBy');
+            $table->dateTime('DeletedDate')->nullable();
+            $table->uuid('DeletedBy');
+            $table->boolean('IsDeleted');
+            $table->unsignedInteger('BodyPartOrFoodId');
+            $table->unsignedInteger('MainPrakrutiId');
+            $table->text('Symptoms')->nullable();
+
+            $table->primary(['Id']);
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('MainPrakrutiBodyPartOrFoods');
+    }
+};
