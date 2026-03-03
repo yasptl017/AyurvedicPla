@@ -35,14 +35,14 @@ class ClientAppointments extends TableWidget
 
                 TextColumn::make('NextAppointmentDate')
                     ->label('Next Appointment')
-                    ->dateTime()
+                    ->dateTime('d/m/Y h:i A', config('app.timezone'))
                     ->sortable()
                     ->badge(),
 
                 TextColumn::make('CreatedDate')
                     ->label('Created At')
                     ->badge()
-                    ->dateTime()
+                    ->dateTime('d/m/Y h:i A', config('app.timezone'))
                     ->sortable()
             ])
             ->emptyStateHeading('No Appointments')

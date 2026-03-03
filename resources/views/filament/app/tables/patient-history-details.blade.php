@@ -544,7 +544,7 @@
             $metaItems[] = ['label' => 'Fees', 'value' => 'Consult Rs ' . number_format($record->ConsultationFee ?? 0) . ' | Meds Rs ' . number_format($record->MedicinesFee ?? 0)];
         }
         if ($record->NextAppointmentDate) {
-            $metaItems[] = ['label' => 'Next Visit', 'value' => $record->NextAppointmentDate->format('d M Y')];
+            $metaItems[] = ['label' => 'Next Visit', 'value' => $record->NextAppointmentDate->timezone(config('app.timezone'))->format('d/m/Y h:i A')];
         }
         if ($record->Remark) {
             $metaItems[] = ['label' => 'Remark', 'value' => Str::limit($record->Remark, 100)];

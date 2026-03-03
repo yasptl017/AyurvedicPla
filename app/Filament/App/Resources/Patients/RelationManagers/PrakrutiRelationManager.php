@@ -58,7 +58,7 @@ class PrakrutiRelationManager extends RelationManager
                 TextColumn::make('KufPercentage')->label('Kapha %')->suffix('%'),
 
                 TextColumn::make('Total'),
-                TextColumn::make('CreatedDate')->date(),
+                TextColumn::make('CreatedDate')->date('d/m/Y'),
             ])
             ->headerActions([
                 CreateAction::make()

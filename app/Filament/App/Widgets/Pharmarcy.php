@@ -60,10 +60,10 @@ class Pharmarcy extends TableWidget
                 // Stack 4: Timeline (Created + Next Date)
                 TextColumn::make('CreatedDate')
                     ->label('Timeline')
-                    ->dateTime('M d, Y h:i A')
+                    ->dateTime('d/m/Y h:i A', config('app.timezone'))
                     ->sortable()
                     ->description(fn (PatientHistory $record) => $record->NextAppointmentDate
-                        ? 'Next: '.$record->NextAppointmentDate->format('M d, Y')
+                        ? 'Next: '.$record->NextAppointmentDate->timezone(config('app.timezone'))->format('d/m/Y')
                         : 'No follow-up'
                     ),
             ])

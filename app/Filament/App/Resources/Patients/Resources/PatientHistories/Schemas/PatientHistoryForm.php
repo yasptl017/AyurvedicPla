@@ -608,7 +608,12 @@ class PatientHistoryForm
                                     ->id('medicine-fee')
                                     ->numeric(),
 
-                                DateTimePicker::make('NextAppointmentDate'),
+                                DateTimePicker::make('NextAppointmentDate')
+                                    ->displayFormat('d/m/Y h:i A')
+                                    ->format('Y-m-d H:i:s')
+                                    ->seconds(false)
+                                    ->timezone(config('app.timezone'))
+                                    ->native(false),
                                 Textarea::make('Remark')
                                     ->columnSpanFull(),
                                 Textarea::make('Note')
@@ -664,10 +669,14 @@ class PatientHistoryForm
                                         ->schema([
                                             DatePicker::make('First_menstrual_period')
                                                 ->label('Menarche Date')
-                                                ->maxDate(now()),
+                                                ->maxDate(now())
+                                                ->displayFormat('d/m/Y')
+                                                ->native(false),
                                             DatePicker::make('Last_menstrual_period')
                                                 ->label('LMP')
-                                                ->maxDate(now()),
+                                                ->maxDate(now())
+                                                ->displayFormat('d/m/Y')
+                                                ->native(false),
                                             TextInput::make('Duration')
                                                 ->numeric()
                                                 ->suffix('Days'),
@@ -713,11 +722,15 @@ class PatientHistoryForm
                                             DatePicker::make('Last_delivery')
                                                 ->label('Date of Last Delivery')
                                                 ->maxDate(now())
+                                                ->displayFormat('d/m/Y')
+                                                ->native(false)
                                                 ->columnSpan(2), // Spans 2 columns for better look
 
                                             DatePicker::make('Expected_delivery_date')
                                                 ->label('EDD')
                                                 ->minDate(now())
+                                                ->displayFormat('d/m/Y')
+                                                ->native(false)
                                                 ->columnSpan(3),
                                         ]),
 

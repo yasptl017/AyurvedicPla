@@ -5,7 +5,7 @@ namespace App\Filament\App\Resources\Patients\Schemas;
 use App\Models\MainPrakrutiBodyPartOrFood;
 use emmanpbarrameda\FilamentTakePictureField\Forms\Components\TakePicture;
 use Filament\Actions\Action;
-use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -26,7 +26,10 @@ class PatientForm
                 TextInput::make('FirstName')->required(),
                 TextInput::make('MiddleName'),
                 TextInput::make('LastName')->required(),
-                DateTimePicker::make('BirthDate'),
+                DatePicker::make('BirthDate')
+                    ->displayFormat('d/m/Y')
+                    ->format('Y-m-d')
+                    ->native(false),
                 TextInput::make('Weight')
                     ->numeric(),
                 TextInput::make('MobileNo'),

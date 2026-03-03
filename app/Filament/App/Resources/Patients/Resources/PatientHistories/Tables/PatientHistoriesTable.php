@@ -39,7 +39,7 @@ class PatientHistoriesTable
             ->columns([
                 TextColumn::make('CreatedDate')
                     ->label('Visit')
-                    ->dateTime('M d, Y h:i A')
+                    ->dateTime('d/m/Y h:i A', config('app.timezone'))
                     ->sortable(),
 
                 TextColumn::make('diseases.Name')
@@ -76,8 +76,8 @@ class PatientHistoriesTable
                 Filter::make('date_range')
                     ->label('Date Range')
                     ->form([
-                        DatePicker::make('from')->label('From')->native(false),
-                        DatePicker::make('until')->label('Until')->native(false),
+                        DatePicker::make('from')->label('From')->displayFormat('d/m/Y')->native(false),
+                        DatePicker::make('until')->label('Until')->displayFormat('d/m/Y')->native(false),
                     ])
                     ->query(function (Builder $query, array $data) {
                         return $query
@@ -87,10 +87,10 @@ class PatientHistoriesTable
                     ->indicateUsing(function (array $data): array {
                         $indicators = [];
                         if ($data['from'] ?? null) {
-                            $indicators[] = 'From: '.\Carbon\Carbon::parse($data['from'])->toFormattedDateString();
+                            $indicators[] = 'From: '.\Carbon\Carbon::parse($data['from'])->format('d/m/Y');
                         }
                         if ($data['until'] ?? null) {
-                            $indicators[] = 'Until: '.\Carbon\Carbon::parse($data['until'])->toFormattedDateString();
+                            $indicators[] = 'Until: '.\Carbon\Carbon::parse($data['until'])->format('d/m/Y');
                         }
 
                         return $indicators;

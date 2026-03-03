@@ -162,7 +162,7 @@
             </div>
             <div class="modal-info-item modal-text-right">
                 <strong>Date:</strong> 
-                <span>{{ $history->CreatedDate->format('d-m-Y h:i A') }}</span>
+                <span>{{ $history->CreatedDate?->timezone(config('app.timezone'))->format('d/m/Y h:i A') }}</span>
             </div>
             <div class="modal-info-item">
                 <strong>Diagnosis:</strong> 
@@ -213,8 +213,7 @@
         <!-- Footer Section -->
         <div class="modal-footer">
             <div class="modal-follow-up">
-               
-                <p class="gujarati-text">ફરી બતાવવાની તારીખ: <u>{{ $history->NextAppointmentDate?->format('d-m-Y') ?? 'નક્કી નથી' }}</u></p>
+                <p class="gujarati-text">ફરી બતાવવાની તારીખ: <u>{{ $history->NextAppointmentDate?->timezone(config('app.timezone'))->format('d/m/Y') ?? 'નક્કી નથી' }}</u></p>
             </div>
         </div>
 

@@ -27,7 +27,7 @@
     @forelse ($histories as $history)
         <x-filament::section
             compact
-            :heading="'Visit ' . ($history->CreatedDate ? Carbon::parse($history->CreatedDate)->format('M d, Y h:i A') : '-')"
+            :heading="'Visit ' . ($history->CreatedDate ? Carbon::parse($history->CreatedDate)->timezone(config('app.timezone'))->format('d/m/Y h:i A') : '-')"
         >
             <x-slot name="afterHeader">
                 <div class="flex flex-wrap items-center gap-2">

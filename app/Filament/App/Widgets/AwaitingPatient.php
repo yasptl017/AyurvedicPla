@@ -46,7 +46,7 @@ class AwaitingPatient extends TableWidget
                 // 3. STACKED: Date of Birth with exact age below
                 TextColumn::make('BirthDate')
                     ->label('Date of Birth')
-                    ->date() // Standard date format
+                    ->date('d/m/Y')
                     ->description(fn ($record) => "{$record->AgeYear} yrs, {$record->AgeMonth} mos")
                     ->sortable(),
 

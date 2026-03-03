@@ -65,9 +65,19 @@ class Calendar extends CalendarWidget
                 ->rows(3),
             DateTimePicker::make('StartDate')
                 ->required()
-                ->label('Start Date'),
+                ->label('Start Date')
+                ->displayFormat('d/m/Y h:i A')
+                ->format('Y-m-d H:i:s')
+                ->seconds(false)
+                ->timezone(config('app.timezone'))
+                ->native(false),
             DateTimePicker::make('EndDate')
-                ->label('End Date'),
+                ->label('End Date')
+                ->displayFormat('d/m/Y h:i A')
+                ->format('Y-m-d H:i:s')
+                ->seconds(false)
+                ->timezone(config('app.timezone'))
+                ->native(false),
             Checkbox::make('AllDay')
                 ->label('All Day')
                 ->default(true),

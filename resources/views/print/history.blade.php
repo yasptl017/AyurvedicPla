@@ -15,7 +15,7 @@
         </div>
         <div class="info-item text-right">
             <strong>Date:</strong>
-            <span>{{ $history->CreatedDate?->format('d-m-Y') }}</span>
+            <span>{{ $history->CreatedDate?->timezone(config('app.timezone'))->format('d/m/Y') }}</span>
         </div>
         <div class="info-item">
             <strong>Diagnosis:</strong>
@@ -64,7 +64,7 @@
 
     <div class="footer">
         <div class="follow-up">
-            <p class="gujarati-text">ફરી બતાવવાની તારીખ: <u>{{ $history->NextAppointmentDate?->format('d-m-Y') }}</u></p>
+            <p class="gujarati-text">ફરી બતાવવાની તારીખ: <u>{{ $history->NextAppointmentDate?->timezone(config('app.timezone'))->format('d/m/Y') }}</u></p>
         </div>
     </div>
 </div>
