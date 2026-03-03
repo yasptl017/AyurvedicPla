@@ -27,9 +27,19 @@ class DiseaseType extends Model
     {
         return $this->belongsToMany(
             Medicine::class, 'DiseaseTypeMedicines', 'DiseaseTypeId', 'MedicineId')
-            ->where(fn($query) => $query->where('Medicines.IsSpecial', false)->orWhere('Medicines.CreatedBy', auth()->user()->Id))->withPivot([
+            ->withPivot([
+                'Id',
                 'Dose',
-                
+                'TimeOfAdministrationId',
+                'AnupanaId',
+                'Duration',
+                'IsSpecial',
+                'CreatedBy',
+                'ModifiedBy',
+                'CreatedDate',
+                'ModifiedDate',
+                'DeletedBy',
+                'IsDeleted',
             ]);
 
     }
