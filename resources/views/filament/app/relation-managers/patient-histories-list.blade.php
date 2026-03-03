@@ -17,7 +17,7 @@
 
         <x-filament::button
             tag="a"
-            :href="PatientHistoryResource::getUrl('create', ['patient' => $ownerRecord])"
+            :href="PatientHistoryResource::getUrl('create', ['patient' => $ownerRecord->Id])"
             icon="heroicon-o-plus"
         >
             Add History
@@ -35,7 +35,7 @@
                         size="sm"
                         color="gray"
                         tag="a"
-                        :href="PatientHistoryResource::getUrl('edit', ['record' => $history, 'patient' => $ownerRecord])"
+                        :href="PatientHistoryResource::getUrl('edit', ['record' => $history->Id, 'patient' => $ownerRecord->Id])"
                     >
                         Edit
                     </x-filament::button>
@@ -43,7 +43,7 @@
                     <x-filament::button
                         size="sm"
                         color="gray"
-                        wire:click="repeatHistory({{ $history->getKey() }})"
+                        wire:click="repeatHistory('{{ $history->Id }}')"
                         onclick="return confirm('Create a repeated copy of this history?')"
                     >
                         Repeat
@@ -53,7 +53,7 @@
                         size="sm"
                         color="gray"
                         tag="a"
-                        :href="route('order.print', $history)"
+                        :href="route('order.print', ['history' => $history->Id])"
                         target="_blank"
                     >
                         Print

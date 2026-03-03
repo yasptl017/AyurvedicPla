@@ -4,10 +4,10 @@ namespace App\Filament\App\Resources\Patients\RelationManagers;
 
 use App\Filament\App\Resources\Patients\Resources\PatientHistories\PatientHistoryResource;
 use App\Models\PatientHistory;
-use Filament\Facades\FilamentView;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
+use Filament\Support\Facades\FilamentView;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -41,6 +41,15 @@ class HistoryRelationManager extends RelationManager
                 'diseases:Id,Name',
                 'symptoms:Id,Name',
                 'prescriptions.medicine:Id,Name',
+                'vital',
+                'womenHistory',
+                'panchakarmas:Id,Name',
+                'rogaPariksa',
+                'hetuPariksa',
+                'patientRecords',
+                'sketches',
+                'captures',
+                'patientFiles',
             ])
             ->latest('CreatedDate')
             ->get();
@@ -113,8 +122,8 @@ class HistoryRelationManager extends RelationManager
         });
 
         $url = PatientHistoryResource::getUrl('edit', [
-            'record' => $newHistory,
-            'patient' => $this->getOwnerRecord(),
+            'record' => $newHistory->Id,
+            'patient' => $this->getOwnerRecord()->Id,
         ]);
 
         $this->redirect($url, navigate: FilamentView::hasSpaMode($url));
