@@ -30,7 +30,7 @@ class PatientHistoriesTable
     {
         return $table
             ->modifyQueryUsing(fn (Builder $query) => $query->with([
-                'patient',
+                'patient:Id,complain_of,history_of',
                 'diseases',
                 'symptoms',
                 'prescriptions.medicine',

@@ -47,6 +47,9 @@ class PatientForm
 
                 Textarea::make('complain_of'),
 
+                Textarea::make('history_of')
+                    ->label('History of'),
+
                 Select::make('consultation_fees_type')
                     ->label('Consultation Fees')
                     ->options([

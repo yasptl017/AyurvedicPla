@@ -65,9 +65,13 @@
     </div>
     @endif
 
-    {{-- Row 3: Fees · Next Visit · Remark · Note --}}
+    {{-- Row 3: Meta info --}}
     @php
         $metaItems = [];
+        if ($record->patient?->complain_of)
+            $metaItems[] = ['label' => 'Complain of', 'value' => Str::limit($record->patient->complain_of, 120)];
+        if ($record->patient?->history_of)
+            $metaItems[] = ['label' => 'History of', 'value' => Str::limit($record->patient->history_of, 120)];
         if ($record->ConsultationFee || $record->MedicinesFee)
             $metaItems[] = ['label' => 'Fees', 'value' => 'Consult ₹' . number_format($record->ConsultationFee ?? 0) . '  ·  Meds ₹' . number_format($record->MedicinesFee ?? 0)];
         if ($record->NextAppointmentDate)
