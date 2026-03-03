@@ -8,6 +8,7 @@ use App\Models\DiseaseType;
 use App\Models\DiseaseTypeMedicine;
 use App\Models\Medicine;
 use App\Models\MedicineForm;
+use App\Models\ModernSymptom;
 use App\Models\Panchakarma;
 use App\Models\Patient;
 use App\Models\PatientHistory;
@@ -118,14 +119,38 @@ class PatientHistoryForm
                                     ->columnSpan(2)
                                     ->preload(),
                                 Select::make('modern_symptoms')
-                                    ->relationship('modernSymptoms', 'Name')
+                                    ->relationship(
+                                        name: 'modernSymptoms',
+                                        titleAttribute: 'Name',
+                                        modifyQueryUsing: fn ($query) => $query
+                                            ->select(['ModernSymptoms.Id', 'ModernSymptoms.Name'])
+                                            ->orderBy('Name'),
+                                    )
                                     ->multiple()
-                                    ->searchable()
+                                    ->searchable(['Name'])
                                     ->preload()
+                                    ->optionsLimit(150)
                                     ->createOptionForm([
                                         TextInput::make('Name')->required(),
                                         Textarea::make('Description'),
-                                    ])->createOptionUsing(function () {}),
+                                    ])
+                                    ->createOptionUsing(function (array $data): string {
+                                        $name = trim((string) ($data['Name'] ?? ''));
+
+                                        $modernSymptom = ModernSymptom::query()
+                                            ->whereRaw('LOWER(Name) = ?', [Str::lower($name)])
+                                            ->first();
+
+                                        if (! $modernSymptom) {
+                                            $modernSymptom = ModernSymptom::create([
+                                                'Name' => $name,
+                                                'Description' => filled($data['Description'] ?? null) ? $data['Description'] : null,
+                                                'IsPrivate' => false,
+                                            ]);
+                                        }
+
+                                        return (string) $modernSymptom->Id;
+                                    }),
                                 Repeater::make('diseases_types_display')
                                     ->hiddenLabel()
                                     ->dehydrated(false)

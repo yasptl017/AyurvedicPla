@@ -6,6 +6,7 @@
     /** @var \App\Models\PatientHistory $record */
     $diseases = $record->diseases->pluck('Name')->filter()->values();
     $symptoms = $record->symptoms->pluck('Name')->filter()->values();
+    $modernSymptoms = $record->modernSymptoms->pluck('Name')->filter()->sort()->values();
     $prescriptions = $record->prescriptions;
 
     $excludedKeys = collect([
@@ -465,12 +466,12 @@
         </div>
     </div>
 
-    @if ($diseases->isNotEmpty() || $symptoms->isNotEmpty())
+    @if ($diseases->isNotEmpty() || $symptoms->isNotEmpty() || $modernSymptoms->isNotEmpty())
         <table style="width:100%;border-collapse:collapse;">
             <tbody>
                 <tr>
                     @if ($diseases->isNotEmpty())
-                        <td style="padding:0 12px 0 0;vertical-align:top;width:50%;">
+                        <td style="padding:0 12px 0 0;vertical-align:top;width:33.33%;">
                             <span style="font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.05em;">Diseases&nbsp;</span>
                             @foreach ($diseases as $d)
                                 <span style="display:inline-block;background:#fee2e2;color:#b91c1c;border-radius:999px;padding:1px 8px;font-size:11px;font-weight:500;margin:1px 2px 1px 0;">{{ $d }}</span>
@@ -478,10 +479,18 @@
                         </td>
                     @endif
                     @if ($symptoms->isNotEmpty())
-                        <td style="padding:0;vertical-align:top;">
+                        <td style="padding:0 12px 0 0;vertical-align:top;width:33.33%;">
                             <span style="font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.05em;">Symptoms&nbsp;</span>
                             @foreach ($symptoms as $s)
                                 <span style="display:inline-block;background:#fef3c7;color:#92400e;border-radius:999px;padding:1px 8px;font-size:11px;margin:1px 2px 1px 0;">{{ $s }}</span>
+                            @endforeach
+                        </td>
+                    @endif
+                    @if ($modernSymptoms->isNotEmpty())
+                        <td style="padding:0;vertical-align:top;">
+                            <span style="font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.05em;">Modern Symptoms&nbsp;</span>
+                            @foreach ($modernSymptoms as $ms)
+                                <span style="display:inline-block;background:#dbeafe;color:#1d4ed8;border-radius:999px;padding:1px 8px;font-size:11px;margin:1px 2px 1px 0;">{{ $ms }}</span>
                             @endforeach
                         </td>
                     @endif

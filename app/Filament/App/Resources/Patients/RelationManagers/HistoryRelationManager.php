@@ -40,6 +40,7 @@ class HistoryRelationManager extends RelationManager
                 'patient:Id,complain_of,history_of',
                 'diseases:Id,Name',
                 'symptoms:Id,Name',
+                'modernSymptoms:Id,Name',
                 'prescriptions.medicine:Id,Name',
                 'vital',
                 'womenHistory',
@@ -64,6 +65,7 @@ class HistoryRelationManager extends RelationManager
                 'prescriptions',
                 'diseases',
                 'symptoms',
+                'modernSymptoms',
                 'panchakarmas',
                 'womenHistory',
                 'vital',
@@ -91,6 +93,7 @@ class HistoryRelationManager extends RelationManager
             $newHistory->diseases()->attach($diseases);
 
             $newHistory->symptoms()->attach($record->symptoms()->pluck('SymptomId'));
+            $newHistory->modernSymptoms()->attach($record->modernSymptoms()->pluck('ModernSymptoms.Id'));
 
             $panchakarmas = $record->panchakarmas()->withPivot(['Detail'])->get()
                 ->mapWithKeys(fn ($item) => [
