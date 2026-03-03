@@ -3,6 +3,7 @@
 namespace App\Filament\App\Resources\Patients\Pages;
 
 use App\Filament\App\Resources\Patients\PatientResource;
+use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\RestoreAction;
@@ -30,5 +31,26 @@ class EditPatient extends EditRecord
             ForceDeleteAction::make(),
             RestoreAction::make(),
         ];
+    }
+
+    protected function getFormActions(): array
+    {
+        return [
+            $this->getSaveFormAction(),
+            Action::make('next')
+                ->label('Next')
+                ->action('saveAndGoToHistory'),
+            $this->getCancelFormAction(),
+        ];
+    }
+
+    public function saveAndGoToHistory(): void
+    {
+        $this->save(shouldRedirect: false);
+
+        $url = PatientResource::getUrl('edit', ['record' => $this->getRecord()])
+            .'?relation=0';
+
+        $this->redirect($url);
     }
 }
