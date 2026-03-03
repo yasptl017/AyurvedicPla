@@ -154,6 +154,8 @@
 <div
     x-data="{
         detailModal: null,
+        formFrameLoading: false,
+        formFrameReady: false,
         historyEditUrl: '{{ $historyEditUrl }}',
         formTabs: {
             vital: 'Vital',
@@ -164,8 +166,14 @@
         },
         setDetailModal(tab) {
             this.detailModal = tab;
+
             if (this.formTabs[tab]) {
+                this.formFrameLoading = true;
+                this.formFrameReady = false;
                 this.$nextTick(() => this.openFormTab(tab));
+            } else {
+                this.formFrameLoading = false;
+                this.formFrameReady = false;
             }
         },
         openFormTab(tab) {
@@ -182,7 +190,11 @@
                 return;
             }
 
+            this.applyFrameLayout();
+            this.hideFrameControls();
             this.activateFormTab(tab);
+            this.formFrameLoading = false;
+            this.formFrameReady = true;
         },
         onFormFrameLoad() {
             const frame = this.$refs.historyFormFrame;
@@ -194,6 +206,8 @@
             this.applyFrameLayout();
             this.hideFrameControls();
             this.activateFormTab(frame.dataset.targetTab || this.detailModal);
+            this.formFrameLoading = false;
+            this.formFrameReady = true;
         },
         normalizeLabel(value) {
             return (value || '')
@@ -218,6 +232,10 @@
             const style = frameDoc.createElement('style');
             style.id = styleId;
             style.textContent = `
+                html, body {
+                    margin: 0 !important;
+                    padding: 0 !important;
+                }
                 .fi-sidebar,
                 .fi-topbar,
                 .fi-breadcrumbs,
@@ -228,10 +246,21 @@
                 }
                 .fi-main {
                     margin-inline-start: 0 !important;
+                    padding-top: 0 !important;
+                    padding-inline: 0.75rem !important;
                 }
                 .fi-main-ctn {
                     max-width: 100% !important;
-                    padding: 0.75rem !important;
+                    padding: 0 !important;
+                }
+                .fi-page-header-main-ctn {
+                    padding-top: 0 !important;
+                    padding-bottom: 0 !important;
+                    gap: 0.5rem !important;
+                }
+                .fi-page-main,
+                .fi-page-content {
+                    gap: 0.5rem !important;
                 }
                 .fi-form-actions, button[type='submit'] {
                     display: none !important;
@@ -335,12 +364,18 @@
                 </div>
 
                 <div style="padding:14px;">
-                    <div x-cloak x-show="formTabs[detailModal]" style="height:min(78vh, calc(92vh - 90px));display:flex;flex-direction:column;gap:8px;">
+                    <div x-cloak x-show="formTabs[detailModal]" style="height:min(78vh, calc(92vh - 90px));position:relative;">
+                        <div
+                            x-show="formFrameLoading"
+                            style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#ffffff;border-radius:8px;color:#6b7280;font-size:12px;z-index:1;"
+                        >
+                            Loading form...
+                        </div>
                         <iframe
                             x-ref="historyFormFrame"
                             @load="onFormFrameLoad"
                             title="Patient history form"
-                            style="width:100%;height:100%;border:none;border-radius:8px;background:#fff;"
+                            :style="'width:100%;height:100%;border:none;border-radius:8px;background:#fff;transition:opacity .12s ease;opacity:' + (formFrameReady ? '1' : '0') + ';'"
                         ></iframe>
                     </div>
 
