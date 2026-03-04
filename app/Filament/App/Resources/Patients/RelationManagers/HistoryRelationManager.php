@@ -8,6 +8,7 @@ use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
 use Filament\Support\Facades\FilamentView;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -17,14 +18,17 @@ class HistoryRelationManager extends RelationManager
 
     protected static ?string $relatedResource = PatientHistoryResource::class;
 
+    public ?string $diseaseSearch = null;
+
     public function content(Schema $schema): Schema
     {
         return $schema
             ->components([
                 View::make('filament.app.relation-managers.patient-histories-list')
-                    ->viewData([
+                    ->viewData(fn () => [
                         'histories' => $this->getHistoryRecords(),
                         'ownerRecord' => $this->getOwnerRecord(),
+                        'diseaseSearch' => $this->diseaseSearch,
                     ]),
             ]);
     }
@@ -34,6 +38,8 @@ class HistoryRelationManager extends RelationManager
      */
     protected function getHistoryRecords(): Collection
     {
+        $search = trim((string) $this->diseaseSearch);
+
         return $this->getOwnerRecord()
             ->patientHistories()
             ->with([
@@ -52,6 +58,10 @@ class HistoryRelationManager extends RelationManager
                 'captures',
                 'patientFiles',
             ])
+            ->when($search !== '', fn (Builder $query) => $query->whereHas(
+                'diseases',
+                fn (Builder $diseaseQuery) => $diseaseQuery->where('Diseases.Name', 'like', "%{$search}%")
+            ))
             ->latest('CreatedDate')
             ->get();
     }

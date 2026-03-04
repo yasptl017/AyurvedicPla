@@ -7,21 +7,34 @@
 
     /** @var Collection<int, PatientHistory> $histories */
     /** @var Patient $ownerRecord */
+    /** @var string|null $diseaseSearch */
 @endphp
 
 <div class="space-y-4">
-    <div class="flex items-center justify-between gap-3">
-        <p class="text-sm text-gray-500 dark:text-gray-400">
-            {{ $histories->count() }} visit{{ $histories->count() === 1 ? '' : 's' }}
-        </p>
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div class="w-full sm:max-w-sm">
+            <x-filament::input.wrapper prefix-icon="heroicon-m-magnifying-glass">
+                <x-filament::input
+                    type="search"
+                    wire:model.live.debounce.300ms="diseaseSearch"
+                    placeholder="Search histories by disease"
+                />
+            </x-filament::input.wrapper>
+        </div>
 
-        <x-filament::button
-            tag="a"
-            :href="PatientHistoryResource::getUrl('create', ['patient' => $ownerRecord->Id])"
-            icon="heroicon-o-plus"
-        >
-            Add History
-        </x-filament::button>
+        <div class="flex items-center justify-between gap-3 sm:justify-end">
+            <p class="text-sm text-gray-500 dark:text-gray-400">
+                {{ $histories->count() }} visit{{ $histories->count() === 1 ? '' : 's' }}
+            </p>
+
+            <x-filament::button
+                tag="a"
+                :href="PatientHistoryResource::getUrl('create', ['patient' => $ownerRecord->Id])"
+                icon="heroicon-o-plus"
+            >
+                Add History
+            </x-filament::button>
+        </div>
     </div>
 
     @forelse ($histories as $history)
@@ -66,7 +79,11 @@
     @empty
         <x-filament::section compact heading="No Histories">
             <p class="text-sm text-gray-500 dark:text-gray-400">
-                This patient has no history entries yet.
+                @if (filled($diseaseSearch))
+                    No history entries found for "{{ $diseaseSearch }}".
+                @else
+                    This patient has no history entries yet.
+                @endif
             </p>
         </x-filament::section>
     @endforelse
