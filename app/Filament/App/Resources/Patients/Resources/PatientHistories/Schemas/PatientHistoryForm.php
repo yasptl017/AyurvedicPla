@@ -59,22 +59,43 @@ class PatientHistoryForm
                             $globalMedicineForms = MedicineForm::query()->pluck('Name', 'Id');
 
                             return [
-                                Placeholder::make('patient_complain_of')
-                                    ->label('Complain Of')
-                                    ->content(function () use ($record) {
-                                        $patientId = $record?->PatientId ?? request()->route('patient');
+                                Grid::make(2)
+                                    ->columnSpanFull()
+                                    ->schema([
+                                        Textarea::make('patient_complain_of')
+                                            ->label('Complain Of')
+                                            ->afterStateHydrated(function ($component) use ($record) {
+                                                $patientId = $record?->PatientId ?? request()->route('patient');
 
-                                        if (! $patientId) {
-                                            return '-';
-                                        }
+                                                if (! $patientId) {
+                                                    return;
+                                                }
 
-                                        $complain = Patient::query()
-                                            ->where('Id', $patientId)
-                                            ->value('complain_of');
+                                                $component->state(
+                                                    Patient::query()->where('Id', $patientId)->value('complain_of')
+                                                );
+                                            })
+                                            ->disabled()
+                                            ->dehydrated(false)
+                                            ->rows(2),
 
-                                        return $complain ?: '-';
-                                    })
-                                    ->columnSpanFull(),
+                                        Textarea::make('patient_history_of')
+                                            ->label('History Of')
+                                            ->afterStateHydrated(function ($component) use ($record) {
+                                                $patientId = $record?->PatientId ?? request()->route('patient');
+
+                                                if (! $patientId) {
+                                                    return;
+                                                }
+
+                                                $component->state(
+                                                    Patient::query()->where('Id', $patientId)->value('history_of')
+                                                );
+                                            })
+                                            ->disabled()
+                                            ->dehydrated(false)
+                                            ->rows(2),
+                                    ]),
 
                                 Select::make('diseases')
                                     ->columnSpanFull()
