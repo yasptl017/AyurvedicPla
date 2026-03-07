@@ -578,7 +578,7 @@ class PatientHistoryForm
 
                                 Repeater::make('Prescriptions')
                                     ->relationship('prescriptions')
-                                    ->addable(fn (?PatientHistory $record): bool => blank($record))
+                                    ->addable(false)
                                     ->table([
 
                                         Repeater\TableColumn::make('MedicineName'),
