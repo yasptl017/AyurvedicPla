@@ -637,6 +637,7 @@ class PatientHistoryForm
                                     ->seconds(false)
                                     ->timezone(config('app.timezone'))
                                     ->native(false)
+                                    ->extraAttributes(['class' => 'next-appointment-date-picker'])
                                     ->disabledDates(fn (): array => AppointmentAvailability::unavailableDatesForClinic(Filament::getTenant()?->Id))
                                     ->helperText('Days marked as not available in the calendar cannot be selected.')
                                     ->rule(function () {

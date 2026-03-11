@@ -22,3 +22,18 @@
 canvas[x-ref="canvas"] {
     height: 42rem !important;
 }
+
+.next-appointment-date-picker .fi-fo-date-time-picker-calendar-day.fi-disabled {
+    background-color: rgb(254 226 226);
+    color: rgb(185 28 28);
+    opacity: 1;
+}
+
+.next-appointment-date-picker .fi-fo-date-time-picker-calendar-day.fi-disabled.fi-fo-date-time-picker-calendar-day-today {
+    box-shadow: inset 0 0 0 1px rgb(220 38 38);
+}
+
+:is(.dark .next-appointment-date-picker) .fi-fo-date-time-picker-calendar-day.fi-disabled {
+    background-color: rgb(127 29 29 / 0.45);
+    color: rgb(252 165 165);
+}
