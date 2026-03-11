@@ -57,7 +57,6 @@
                         size="sm"
                         color="gray"
                         wire:click="repeatHistory('{{ $history->Id }}')"
-                        onclick="return confirm('Create a repeated copy of this history?')"
                     >
                         Repeat
                     </x-filament::button>
