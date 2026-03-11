@@ -26,10 +26,15 @@
             </h3>
 
             <!-- Links Row -->
+            @php
+                $availableSections = collect($sections)->filter(
+                    fn($columnKey) => filled($disease->toArray()[$columnKey] ?? null)
+                );
+            @endphp
             <div class="flex flex-wrap text-sm text-gray-600 dark:text-gray-300 items-center">
-                @foreach($sections as $label => $columnKey)
+                @foreach($availableSections as $label => $columnKey)
 
-                    <x-filament::modal width="6xl">
+                    <x-filament::modal width="6xl" id="disease-modal-{{ $disease->Id }}-{{ $loop->index }}">
                         <x-slot name="trigger">
                             <button
                                 type="button"
@@ -39,14 +44,38 @@
                             </button>
                         </x-slot>
                         <x-slot name="heading">
-                            {{$label}}
+                            {{ $disease->Name }} — {{ $label }}
                         </x-slot>
 
-
-                        <div class="prose dark:prose-invert max-w-none">
+                        <div class="prose dark:prose-invert max-w-none" id="disease-content-{{ $disease->Id }}-{{ $loop->index }}">
                             {!! $disease->toArray()[$columnKey] !!}
                         </div>
 
+                        <x-slot name="footer">
+                            <div class="flex justify-end gap-3">
+                                <x-filament::button
+                                    color="gray"
+                                    icon="heroicon-o-printer"
+                                    onclick="
+                                        var content = document.getElementById('disease-content-{{ $disease->Id }}-{{ $loop->index }}').innerHTML;
+                                        var w = window.open('', '_blank');
+                                        w.document.write('<html><head><title>{{ addslashes($disease->Name) }} — {{ addslashes($label) }}</title><style>body{font-family:sans-serif;padding:24px;max-width:900px;margin:auto}</style></head><body>' + content + '</body></html>');
+                                        w.document.close();
+                                        w.focus();
+                                        w.print();
+                                    "
+                                >
+                                    Print
+                                </x-filament::button>
+
+                                <x-filament::button
+                                    color="gray"
+                                    @click="$dispatch('close-modal', {id: 'disease-modal-{{ $disease->Id }}-{{ $loop->index }}'})"
+                                >
+                                    Close
+                                </x-filament::button>
+                            </div>
+                        </x-slot>
                     </x-filament::modal>
 
                     @if(!$loop->last)
