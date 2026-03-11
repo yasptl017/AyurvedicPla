@@ -2,7 +2,6 @@
 
 namespace App\Filament\App\Resources\Patients\Resources\PatientHistories\Schemas;
 
-use App\Support\AppointmentAvailability;
 use App\Models\Anupana;
 use App\Models\Disease;
 use App\Models\DiseaseType;
@@ -14,6 +13,8 @@ use App\Models\Panchakarma;
 use App\Models\Patient;
 use App\Models\PatientHistory;
 use App\Models\TimeOfAdministration;
+use App\Support\AppointmentAvailability;
+use Closure;
 use emmanpbarrameda\FilamentTakePictureField\Forms\Components\TakePicture;
 use Filament\Actions\Action;
 use Filament\Facades\Filament;
@@ -39,7 +40,6 @@ use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Filament\Support\Enums\Width;
-use Closure;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
@@ -185,10 +185,10 @@ class PatientHistoryForm
                                     ->columnSpanFull()
                                     ->default([])
                                     ->table([
-                                        Repeater\TableColumn::make('Disease'),
-                                        Repeater\TableColumn::make('Medicine'),
-                                        Repeater\TableColumn::make('Disease Type'),
-                                        Repeater\TableColumn::make('Symptoms'),
+                                        Repeater\TableColumn::make('Disease')->alignStart(),
+                                        Repeater\TableColumn::make('Medicine')->alignStart(),
+                                        Repeater\TableColumn::make('Disease Type')->alignStart(),
+                                        Repeater\TableColumn::make('Symptoms')->alignStart(),
                                     ])
                                     ->afterStateHydrated(function (Get $get, Set $set) {
                                         $diseases = $get('diseases');
@@ -293,6 +293,10 @@ class PatientHistoryForm
                                                                     'TimeOfAdministrationId' => $data['TimeOfAdministrationId'],
                                                                     'AnupanaId' => $data['AnupanaId'],
                                                                     'Duration' => $data['Duration'],
+                                                                    'OrderNumber' => (DiseaseTypeMedicine::query()
+                                                                        ->where('DiseaseTypeId', $data['DiseaseTypeId'])
+                                                                        ->where('OrderNumber', '>=', 1)
+                                                                        ->max('OrderNumber') ?? 0) + 1,
                                                                 ]);
 
                                                                 $current = $get('Medicines') ?? [];
@@ -316,13 +320,13 @@ class PatientHistoryForm
                                                         ->cloneable(false)
                                                         ->reorderable(false)
                                                         ->table([
-                                                            Repeater\TableColumn::make('Select'),
-                                                            Repeater\TableColumn::make('MedicineName'),
-                                                            Repeater\TableColumn::make('MedicineFormName'),
-                                                            Repeater\TableColumn::make('Dose'),
-                                                            Repeater\TableColumn::make('TimeOfAdministration'),
-                                                            Repeater\TableColumn::make('Anupana'),
-                                                            Repeater\TableColumn::make('Quantity'),
+                                                            Repeater\TableColumn::make('Select')->alignStart(),
+                                                            Repeater\TableColumn::make('MedicineName')->alignStart(),
+                                                            Repeater\TableColumn::make('MedicineFormName')->alignStart(),
+                                                            Repeater\TableColumn::make('Dose')->alignStart(),
+                                                            Repeater\TableColumn::make('TimeOfAdministration')->alignStart(),
+                                                            Repeater\TableColumn::make('Anupana')->alignStart(),
+                                                            Repeater\TableColumn::make('Quantity')->alignStart(),
                                                         ])
                                                         ->schema(function () use ($globalAnupanas, $globalTimeOfAdministrations, $globalMedicineForms) {
                                                             return [
@@ -396,7 +400,8 @@ class PatientHistoryForm
                                                         ->default(function () use ($get) {
                                                             return DiseaseTypeMedicine::query()
                                                                 ->where('DiseaseTypeId', $get('type_id'))
-                                                                ->where(fn ($query) => $query->where('IsSpecial', false)->orWhere('CreatedBy', auth()->user()->Id))
+                                                                ->where(fn ($q) => $q->whereNull('OrderNumber')->orWhere('OrderNumber', '>=', 1))
+                                                                ->whereHas('medicine')
                                                                 ->with([
                                                                     'medicine' => fn ($q) => $q->select(['Id', 'Name', 'MedicineFormId']),
                                                                     'medicine.medicineForm' => fn ($q) => $q->select(['Id', 'Name']),
@@ -404,7 +409,8 @@ class PatientHistoryForm
                                                                     'anupana' => fn ($q) => $q->select(['Id', 'NameGujarati']),
 
                                                                 ])
-                                                                ->select(['Id', 'MedicineId', 'Dose', 'Duration', 'TimeOfAdministrationId', 'AnupanaId'])
+                                                                ->select(['Id', 'MedicineId', 'Dose', 'Duration', 'TimeOfAdministrationId', 'AnupanaId', 'OrderNumber', 'DeletedDate'])
+                                                                ->orderByRaw('CASE WHEN OrderNumber IS NULL THEN 1 ELSE 0 END, OrderNumber ASC')
                                                                 ->get()
                                                                 ->map(fn ($item) => [
                                                                     'MedicineId' => $item->medicine?->Id,

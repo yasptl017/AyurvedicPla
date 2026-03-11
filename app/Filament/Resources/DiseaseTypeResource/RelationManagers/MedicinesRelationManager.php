@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\DiseaseTypeResource\RelationManagers;
 
 use App\Models\Anupana;
+use App\Models\DiseaseTypeMedicine;
 use App\Models\Medicine;
 use App\Models\MedicineForm;
 use App\Models\TimeOfAdministration;
@@ -11,6 +12,8 @@ use Filament\Actions\Action;
 use Filament\Actions\DetachAction;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\CheckboxList;
+use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\RelationManagers\RelationManager;
@@ -37,7 +40,11 @@ class MedicinesRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
+            ->defaultSort('DiseaseTypeMedicines.OrderNumber', 'asc')
             ->columns([
+                TextColumn::make('pivot.OrderNumber')
+                    ->label('Order')
+                    ->sortable(false),
                 TextColumn::make('Name')
                     ->label('Medicine')
                     ->searchable()
@@ -125,21 +132,151 @@ class MedicinesRelationManager extends RelationManager
                             ->all();
 
                         $attachedLookup = array_flip($attachedMedicineIds);
-                        $newPivotData = $this->buildNewPivotData($data);
+                        $basePivotData = $this->buildNewPivotData($data);
                         $existingPivotData = $this->buildExistingPivotData($data);
                         $toAttach = [];
 
                         foreach ($medicineIds as $medicineId) {
                             if (isset($attachedLookup[$medicineId])) {
                                 $this->getOwnerRecord()->medicines()->updateExistingPivot($medicineId, $existingPivotData);
+
                                 continue;
                             }
 
-                            $toAttach[$medicineId] = $newPivotData;
+                            $toAttach[$medicineId] = $basePivotData;
                         }
 
                         if ($toAttach !== []) {
                             $this->getOwnerRecord()->medicines()->syncWithoutDetaching($toAttach);
+                            $this->reorderAlphabetically();
+                        }
+                    }),
+                Action::make('autoOrderAlphabetically')
+                    ->label('Auto-order A→Z')
+                    ->icon(Heroicon::OutlinedBarsArrowDown)
+                    ->color('gray')
+                    ->requiresConfirmation()
+                    ->modalHeading('Auto-order Medicines Alphabetically')
+                    ->modalDescription('This will assign sequential order numbers to all medicines (except hidden ones) sorted A→Z by name. Any existing custom order will be overwritten.')
+                    ->action(function (): void {
+                        $this->reorderAlphabetically();
+                    }),
+                Action::make('reorderMedicines')
+                    ->label('Reorder')
+                    ->icon(Heroicon::OutlinedBarsArrowDown)
+                    ->color('gray')
+                    ->fillForm(function (): array {
+                        $medicines = DiseaseTypeMedicine::query()
+                            ->where('DiseaseTypeId', $this->getOwnerRecord()->Id)
+                            ->whereHas('medicine')
+                            ->with(['medicine' => fn ($q) => $q->select(['Id', 'Name'])])
+                            ->orderByRaw('CASE WHEN OrderNumber IS NULL THEN 1 ELSE 0 END, CASE WHEN OrderNumber = -1 THEN 1 ELSE 0 END, OrderNumber ASC')
+                            ->select(['Id', 'MedicineId', 'OrderNumber', 'DeletedDate'])
+                            ->get()
+                            ->map(fn ($item) => [
+                                'pivot_id' => $item->Id,
+                                'medicine_name' => $item->medicine?->Name ?? '-',
+                                'OrderNumber' => $item->OrderNumber,
+                            ])
+                            ->values()
+                            ->toArray();
+
+                        return ['medicines' => $medicines];
+                    })
+                    ->form([
+                        Repeater::make('medicines')
+                            ->label('Medicine Order')
+                            ->addable(false)
+                            ->deletable(false)
+                            ->reorderable(false)
+                            ->schema([
+                                Hidden::make('pivot_id'),
+                                TextInput::make('medicine_name')
+                                    ->label('Medicine')
+                                    ->disabled()
+                                    ->dehydrated(false),
+                                TextInput::make('OrderNumber')
+                                    ->label('Order')
+                                    ->numeric()
+                                    ->minValue(1)
+                                    ->required(),
+                            ])
+                            ->columns(2),
+                    ])
+                    ->modalWidth('lg')
+                    ->stickyModalFooter()
+                    ->action(function (array $data): void {
+                        $diseaseTypeId = $this->getOwnerRecord()->Id;
+                        $now = now();
+                        $userId = auth()->id();
+
+                        // Load current order state from DB (keyed by pivot Id)
+                        $current = DiseaseTypeMedicine::query()
+                            ->where('DiseaseTypeId', $diseaseTypeId)
+                            ->pluck('OrderNumber', 'Id')
+                            ->toArray();
+
+                        // Build map of pivot_id => new requested OrderNumber
+                        $requested = [];
+                        foreach ($data['medicines'] as $item) {
+                            $requested[(int) $item['pivot_id']] = $item['OrderNumber'] === null ? null : (int) $item['OrderNumber'];
+                        }
+
+                        // Detect items whose OrderNumber actually changed
+                        $changed = [];
+                        foreach ($requested as $pivotId => $newOrder) {
+                            $oldOrder = $current[$pivotId] ?? null;
+                            if ($newOrder !== null && (int) $newOrder !== (int) $oldOrder) {
+                                $changed[$pivotId] = ['old' => (int) $oldOrder, 'new' => (int) $newOrder];
+                            }
+                        }
+
+                        foreach ($changed as $pivotId => $move) {
+                            $oldOrder = $move['old'];
+                            $newOrder = $move['new'];
+
+                            if ($newOrder < $oldOrder) {
+                                // Moving up: shift items between newOrder and oldOrder-1 down by 1
+                                DiseaseTypeMedicine::query()
+                                    ->where('DiseaseTypeId', $diseaseTypeId)
+                                    ->where('Id', '!=', $pivotId)
+                                    ->whereBetween('OrderNumber', [$newOrder, $oldOrder - 1])
+                                    ->increment('OrderNumber', 1, [
+                                        'ModifiedBy' => $userId,
+                                        'ModifiedDate' => $now,
+                                    ]);
+                            } else {
+                                // Moving down: shift items between oldOrder+1 and newOrder up by 1
+                                DiseaseTypeMedicine::query()
+                                    ->where('DiseaseTypeId', $diseaseTypeId)
+                                    ->where('Id', '!=', $pivotId)
+                                    ->whereBetween('OrderNumber', [$oldOrder + 1, $newOrder])
+                                    ->decrement('OrderNumber', 1, [
+                                        'ModifiedBy' => $userId,
+                                        'ModifiedDate' => $now,
+                                    ]);
+                            }
+
+                            DiseaseTypeMedicine::query()
+                                ->where('Id', $pivotId)
+                                ->update([
+                                    'OrderNumber' => $newOrder,
+                                    'ModifiedBy' => $userId,
+                                    'ModifiedDate' => $now,
+                                ]);
+                        }
+
+                        // Save items that kept their value or have null/-1 (no shift needed)
+                        foreach ($requested as $pivotId => $newOrder) {
+                            if (! isset($changed[$pivotId])) {
+                                DiseaseTypeMedicine::query()
+                                    ->where('Id', $pivotId)
+                                    ->update([
+                                        'OrderNumber' => $newOrder,
+                                        'ModifiedBy' => $userId,
+                                        'ModifiedDate' => $now,
+                                    ]);
+                            }
                         }
                     }),
             ])->recordActions([
@@ -150,9 +287,14 @@ class MedicinesRelationManager extends RelationManager
                         'TimeOfAdministrationId' => $record->pivot?->TimeOfAdministrationId,
                         'Duration' => $record->pivot?->Duration,
                         'AnupanaId' => $record->pivot?->AnupanaId,
+                        'OrderNumber' => $record->pivot?->OrderNumber,
                     ])
                     ->form([
                         ...$this->getMedicineDetailFields(),
+                        TextInput::make('OrderNumber')
+                            ->label('Order')
+                            ->numeric()
+                            ->minValue(1),
                     ])
                     ->action(function (Medicine $record, array $data): void {
                         $this->getOwnerRecord()->medicines()->updateExistingPivot(
@@ -238,7 +380,7 @@ class MedicinesRelationManager extends RelationManager
 
     protected function buildExistingPivotData(array $data): array
     {
-        return [
+        $pivotData = [
             'Dose' => $data['Dose'],
             'TimeOfAdministrationId' => $data['TimeOfAdministrationId'],
             'AnupanaId' => $data['AnupanaId'],
@@ -246,6 +388,12 @@ class MedicinesRelationManager extends RelationManager
             'ModifiedBy' => auth()->id(),
             'ModifiedDate' => now(),
         ];
+
+        if (array_key_exists('OrderNumber', $data)) {
+            $pivotData['OrderNumber'] = $data['OrderNumber'];
+        }
+
+        return $pivotData;
     }
 
     protected function buildNewPivotData(array $data): array
@@ -260,5 +408,44 @@ class MedicinesRelationManager extends RelationManager
             'IsDeleted' => false,
             'IsSpecial' => false,
         ];
+    }
+
+    /**
+     * Rebuild OrderNumber for all medicines of this disease type sorted
+     * alphabetically by medicine name. Medicines with OrderNumber = -1 are skipped.
+     */
+    protected function reorderAlphabetically(): void
+    {
+        $now = now();
+        $userId = auth()->id();
+
+        // Load all active pivot rows for this disease type (exclude -1 hidden ones)
+        $rows = DiseaseTypeMedicine::query()
+            ->where('DiseaseTypeId', $this->getOwnerRecord()->Id)
+            ->where(fn ($q) => $q->whereNull('OrderNumber')->orWhere('OrderNumber', '!=', -1))
+            ->whereHas('medicine')
+            ->with(['medicine' => fn ($q) => $q->select(['Id', 'Name'])])
+            ->select(['Id', 'MedicineId', 'OrderNumber'])
+            ->get()
+            ->sortBy(fn ($row) => strtolower($row->medicine?->Name ?? ''))
+            ->values();
+
+        foreach ($rows as $index => $row) {
+            DiseaseTypeMedicine::query()
+                ->where('Id', $row->Id)
+                ->update([
+                    'OrderNumber' => $index + 1,
+                    'ModifiedBy' => $userId,
+                    'ModifiedDate' => $now,
+                ]);
+        }
+    }
+
+    protected function getNextOrderNumber(): int
+    {
+        return (DiseaseTypeMedicine::query()
+            ->where('DiseaseTypeId', $this->getOwnerRecord()->Id)
+            ->where('OrderNumber', '>=', 1)
+            ->max('OrderNumber') ?? 0) + 1;
     }
 }

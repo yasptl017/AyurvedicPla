@@ -40,6 +40,7 @@ class DiseaseType extends Model
                 'ModifiedDate',
                 'DeletedBy',
                 'IsDeleted',
+                'OrderNumber',
             ]);
 
     }
