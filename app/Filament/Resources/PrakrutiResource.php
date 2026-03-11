@@ -22,6 +22,7 @@ class PrakrutiResource extends Resource
 {
     protected static ?string $model = MainPrakrutiBodyPartOrFood::class;
     protected static ?string $slug = "prakrutis";
+    protected static ?string $navigationLabel = 'Prakruti';
     protected static string|null|UnitEnum $navigationGroup = "Body & Constitution";
     protected static ?int $navigationSort = 1;
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedFaceSmile;
