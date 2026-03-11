@@ -6,6 +6,8 @@ use App\Filament\App\Resources\Patients\PatientResource;
 use App\Filament\App\Resources\Patients\Resources\PatientHistories\PatientHistoryResource;
 use App\Models\CalendarAppointment;
 use App\Models\PatientHistory;
+use App\Support\AppointmentAvailability;
+use Closure;
 use Filament\Actions\Action;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\Checkbox;
@@ -14,6 +16,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Utilities\Get;
 use Guava\Calendar\Enums\CalendarViewType;
 use Guava\Calendar\Filament\Actions\CreateAction;
 use Guava\Calendar\Filament\Actions\DeleteAction;
@@ -70,14 +73,33 @@ class Calendar extends CalendarWidget
                 ->format('Y-m-d H:i:s')
                 ->seconds(false)
                 ->timezone(config('app.timezone'))
-                ->native(false),
+                ->native(false)
+                ->disabledDates(fn (): array => $this->getUnavailableDatesForAppointmentForm())
+                ->helperText('Days marked as not available are disabled for scheduling.')
+                ->rule(function (Get $get) {
+                    return function (string $attribute, mixed $value, Closure $fail) use ($get): void {
+                        if (blank($value)) {
+                            return;
+                        }
+
+                        if (AppointmentAvailability::rangeTouchesUnavailableDateForClinic(
+                            Filament::getTenant()?->Id,
+                            $value,
+                            $get('EndDate'),
+                            $this->getUnavailableDateExclusionRecordId(),
+                        )) {
+                            $fail('This appointment falls on a day marked as not available.');
+                        }
+                    };
+                }),
             DateTimePicker::make('EndDate')
                 ->label('End Date')
                 ->displayFormat('d/m/Y h:i A')
                 ->format('Y-m-d H:i:s')
                 ->seconds(false)
                 ->timezone(config('app.timezone'))
-                ->native(false),
+                ->native(false)
+                ->disabledDates(fn (): array => $this->getUnavailableDatesForAppointmentForm()),
             Checkbox::make('AllDay')
                 ->label('All Day')
                 ->default(true),
@@ -99,15 +121,36 @@ class Calendar extends CalendarWidget
         ]);
     }
 
+    protected function getUnavailableDateExclusionRecordId(): ?string
+    {
+        $record = $this->getEventRecord();
+
+        if (! ($record instanceof CalendarAppointment) || ! $record->NotAvailable) {
+            return null;
+        }
+
+        return (string) $record->getKey();
+    }
+
+    /**
+     * @return list<string>
+     */
+    protected function getUnavailableDatesForAppointmentForm(): array
+    {
+        return AppointmentAvailability::unavailableDatesForClinic(
+            Filament::getTenant()?->Id,
+            $this->getUnavailableDateExclusionRecordId(),
+        );
+    }
+
     protected function onDateClick(DateClickInfo $info): void
     {
         $clickedDate = $info->date?->toDateString();
 
-        $notAvailable = CalendarAppointment::query()
-            ->where('ClinicId', Filament::getTenant()?->Id)
-            ->where('NotAvailable', true)
-            ->whereDate('StartDate', $clickedDate)
-            ->exists();
+        $notAvailable = AppointmentAvailability::dateIsUnavailableForClinic(
+            Filament::getTenant()?->Id,
+            $clickedDate,
+        );
 
         if ($notAvailable) {
             $this->mountAction('notAvailableWarning');

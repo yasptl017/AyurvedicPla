@@ -2,6 +2,7 @@
 
 namespace App\Filament\App\Resources\Patients\Resources\PatientHistories\Schemas;
 
+use App\Support\AppointmentAvailability;
 use App\Models\Anupana;
 use App\Models\Disease;
 use App\Models\DiseaseType;
@@ -38,6 +39,7 @@ use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Filament\Support\Enums\Width;
+use Closure;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
@@ -634,7 +636,20 @@ class PatientHistoryForm
                                     ->format('Y-m-d H:i:s')
                                     ->seconds(false)
                                     ->timezone(config('app.timezone'))
-                                    ->native(false),
+                                    ->native(false)
+                                    ->disabledDates(fn (): array => AppointmentAvailability::unavailableDatesForClinic(Filament::getTenant()?->Id))
+                                    ->helperText('Days marked as not available in the calendar cannot be selected.')
+                                    ->rule(function () {
+                                        return function (string $attribute, mixed $value, Closure $fail): void {
+                                            if (blank($value)) {
+                                                return;
+                                            }
+
+                                            if (AppointmentAvailability::dateIsUnavailableForClinic(Filament::getTenant()?->Id, $value)) {
+                                                $fail('This day is marked as not available in the calendar. Please choose another appointment date.');
+                                            }
+                                        };
+                                    }),
                                 Textarea::make('Remark')
                                     ->columnSpanFull(),
                                 Textarea::make('Note')
