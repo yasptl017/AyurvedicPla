@@ -17,21 +17,6 @@
             // Safe getter
             get(key) {
                 return this.responses && this.responses[key] ? this.responses[key] : null;
-            },
-
-            // Calculation Logic
-            get totals() {
-                let stats = { vat: 0, pit: 0, kuf: 0, hit: 0, ahit: 0 };
-                for(let i=1; i<=35; i++) {
-                    if(this.get('q'+i+'_vat')) stats.vat++;
-                    if(this.get('q'+i+'_pit')) stats.pit++;
-                    if(this.get('q'+i+'_kuf')) stats.kuf++;
-
-                    let status = this.get('q'+i+'_status');
-                    if(status === 'HitKar') stats.hit++;
-                    if(status === 'AhitKar') stats.ahit++;
-                }
-                return stats;
             }
         }"
         class="flex flex-col gap-6"
@@ -867,53 +852,5 @@
             </div>
         @endforeach
 
-        {{-- STICKY SUMMARY FOOTER --}}
-        <div class="sticky bottom-6 z-30 mx-auto w-full max-w-5xl px-4">
-            <div
-                class="rounded-2xl bg-white/90 dark:bg-gray-900/95 backdrop-blur-md border border-gray-200 dark:border-white/10 shadow-2xl p-6 ring-1 ring-gray-950/5">
-                <div class="flex items-center justify-between mb-6">
-                    <div>
-                        <h3 class="text-sm font-black text-gray-950 dark:text-white uppercase tracking-widest">
-                            Diagnostic Summary</h3>
-                        <p class="text-[10px] text-gray-500 font-medium">Aggregate Analysis across all 35 parameters</p>
-                    </div>
-                    <div class="hidden sm:block">
-                        <span
-                            class="inline-flex items-center rounded-full bg-primary-50 dark:bg-primary-500/10 px-2 py-1 text-xs font-medium text-primary-700 dark:text-primary-400 ring-1 ring-inset ring-primary-700/10">Live Calculation</span>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-3 md:grid-cols-5 gap-4">
-                    @foreach(['vat' => 'VAT', 'pit' => 'PIT', 'kuf' => 'KUF'] as $key => $lbl)
-                        <div
-                            class="p-4 rounded-2xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5 text-center transition-all hover:scale-[1.02]">
-                            <div
-                                class="text-[10px] font-bold text-gray-400 uppercase tracking-tighter mb-1">{{ $lbl }}</div>
-                            <div class="text-3xl font-black text-primary-600 dark:text-primary-400"
-                                 x-text="totals.{{$key}}">0
-                            </div>
-                        </div>
-                    @endforeach
-
-                    <div
-                        class="p-4 rounded-2xl bg-green-50 dark:bg-green-500/10 border border-green-100 dark:border-green-500/20 text-center transition-all hover:scale-[1.02]">
-                        <div
-                            class="text-[10px] font-bold text-green-600/70 dark:text-green-500/70 uppercase tracking-tighter mb-1">
-                            HitKar
-                        </div>
-                        <div class="text-3xl font-black text-green-700 dark:text-green-500" x-text="totals.hit">0</div>
-                    </div>
-
-                    <div
-                        class="p-4 rounded-2xl bg-red-50 dark:bg-red-500/10 border border-red-100 dark:border-red-500/20 text-center transition-all hover:scale-[1.02]">
-                        <div
-                            class="text-[10px] font-bold text-red-600/70 dark:text-red-500/70 uppercase tracking-tighter mb-1">
-                            AhitKar
-                        </div>
-                        <div class="text-3xl font-black text-red-700 dark:text-red-500" x-text="totals.ahit">0</div>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 </x-dynamic-component>

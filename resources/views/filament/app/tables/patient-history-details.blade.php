@@ -76,6 +76,7 @@
     $gynecData = $extractFilledFields($record->womenHistory);
     $rogaData = $extractFilledFields($record->rogaPariksa);
     $hetuData = $extractFilledFields($record->hetuPariksa);
+    $astavidhyaData = $extractFilledFields($record->astavidhyaPariksha);
 
     $enteredPanchakarmaDetails = $record->panchakarmas
         ->mapWithKeys(fn ($item) => [$item->Id => $item->pivot?->Detail])
@@ -133,6 +134,9 @@
     if (! empty($hetuData)) {
         $detailButtons['hetu_pariksa'] = 'Hetu Pariksa';
     }
+    if (! empty($astavidhyaData)) {
+        $detailButtons['astavidhya_pariksha'] = 'Astavidhya Pariksha';
+    }
     if ($patientReports->isNotEmpty()) {
         $detailButtons['patient_reports'] = 'Patient Reports';
     }
@@ -164,6 +168,7 @@
             panchakarma: 'Panchakarma',
             roga_pariksa: 'RogaPariska',
             hetu_pariksa: 'HetuPariksa',
+            astavidhya_pariksha: 'Astavidhya Pariksha',
         },
         setDetailModal(tab) {
             this.detailModal = tab;
@@ -350,6 +355,7 @@
                         <span x-show="detailModal === 'panchakarma'">Panchakarma</span>
                         <span x-show="detailModal === 'roga_pariksa'">Roga Pariksa</span>
                         <span x-show="detailModal === 'hetu_pariksa'">Hetu Pariksa</span>
+                        <span x-show="detailModal === 'astavidhya_pariksha'">Astavidhya Pariksha</span>
                         <span x-show="detailModal === 'patient_reports'">Patient Reports</span>
                         <span x-show="detailModal === 'sketches'">Sketches</span>
                         <span x-show="detailModal === 'captures'">Captures</span>

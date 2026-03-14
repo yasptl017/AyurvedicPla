@@ -109,6 +109,11 @@ class PatientHistory extends Model implements Eventable
         return $this->hasOne(RogaPariksa::class);
     }
 
+    public function astavidhyaPariksha(): HasOne
+    {
+        return $this->hasOne(AstavidhyaPariksha::class, 'PatientHistoryId');
+    }
+
     public function toCalendarEvent(): CalendarEvent
     {
         return CalendarEvent::make($this)
@@ -131,6 +136,7 @@ class PatientHistory extends Model implements Eventable
             'IsVital' => 'boolean',
             'IsWomenHistory' => 'boolean',
             'IsImages' => 'boolean',
+            'IsAstavidhyaPariksha' => 'boolean',
             'NextAppointmentDate' => 'datetime',
         ];
     }

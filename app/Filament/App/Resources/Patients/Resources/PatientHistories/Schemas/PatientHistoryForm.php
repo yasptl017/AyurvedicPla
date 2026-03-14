@@ -910,6 +910,14 @@ class PatientHistoryForm
                             HetuPariksaForm::configure($schema),
                         ]),
 
+                    Tabs\Tab::make('AstavidhyaPariksha')
+                        ->label('Astavidhya Pariksha')
+                        ->badge(fn (?PatientHistory $record) => self::hasFilledFields($record?->astavidhyaPariksha) ? '●' : null)
+                        ->badgeColor('danger')
+                        ->schema([
+                            AstavidhyaParikshaForm::configure(),
+                        ]),
+
                     Tabs\Tab::make('Patient Reports')
                         ->badge(fn (?PatientHistory $record) => $record?->patientRecords()->exists() ? '●' : null)
                         ->badgeColor('danger')
