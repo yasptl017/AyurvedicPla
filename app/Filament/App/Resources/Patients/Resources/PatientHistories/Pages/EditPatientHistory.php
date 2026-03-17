@@ -15,6 +15,12 @@ class EditPatientHistory extends EditRecord
 {
     protected static string $resource = PatientHistoryResource::class;
 
+    protected function getSaveFormAction(): Action
+    {
+        return parent::getSaveFormAction()
+            ->label('Save');
+    }
+
     protected function getHeaderActions(): array
     {
         return [
