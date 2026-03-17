@@ -345,8 +345,8 @@ class MedicinesRelationManager extends RelationManager
         }
 
         return $this->timeOptions = TimeOfAdministration::query()
-            ->orderBy('Name')
-            ->pluck('Name', 'Id')
+            ->orderBy('NameGujarati')
+            ->pluck('NameGujarati', 'Id')
             ->toArray();
     }
 

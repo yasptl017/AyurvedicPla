@@ -38,9 +38,9 @@ class MedicineResource extends Resource
 {
     protected static ?string $model = DiseaseTypeMedicine::class;
 
-    protected static ?string $slug = "medicines";
+    protected static ?string $slug = 'medicines';
 
-    protected static string|null|UnitEnum $navigationGroup = "Management";
+    protected static string|null|UnitEnum $navigationGroup = 'Management';
 
     protected static ?string $navigationLabel = 'Medicines';
 
@@ -49,7 +49,6 @@ class MedicineResource extends Resource
     protected static bool $isScopedToTenant = false;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedQueueList;
-
 
     public static function form(Schema $schema): Schema
     {
@@ -103,6 +102,7 @@ class MedicineResource extends Resource
                     if (! $state) {
                         $set('MedicineFormId', null);
                         $set('CompanyName', null);
+
                         return;
                     }
 
@@ -144,7 +144,7 @@ class MedicineResource extends Resource
 
             Select::make('TimeOfAdministrationId')
                 ->label('Time Of Administration')
-                ->options(fn () => TimeOfAdministration::query()->pluck('Name', 'Id'))
+                ->options(fn () => TimeOfAdministration::query()->orderBy('NameGujarati')->pluck('NameGujarati', 'Id'))
                 ->searchable()
                 ->preload()
                 ->required(),
@@ -219,9 +219,9 @@ class MedicineResource extends Resource
     public static function getPages(): array
     {
         return [
-            "index" => Pages\ListMedicines::route("/"),
-            "create" => Pages\CreateMedicine::route("/create"),
-            "edit" => Pages\EditMedicine::route("/{record}/edit"),
+            'index' => Pages\ListMedicines::route('/'),
+            'create' => Pages\CreateMedicine::route('/create'),
+            'edit' => Pages\EditMedicine::route('/{record}/edit'),
         ];
     }
 
