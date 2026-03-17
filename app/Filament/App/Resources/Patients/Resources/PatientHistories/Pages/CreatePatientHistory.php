@@ -4,6 +4,7 @@ namespace App\Filament\App\Resources\Patients\Resources\PatientHistories\Pages;
 
 use App\Filament\App\Resources\Patients\PatientResource;
 use App\Filament\App\Resources\Patients\Resources\PatientHistories\PatientHistoryResource;
+use App\Models\Patient;
 use Filament\Actions\Action;
 use Filament\Resources\Pages\CreateRecord;
 
@@ -71,5 +72,27 @@ class CreatePatientHistory extends CreateRecord
         }
 
         return $breadcrumbs;
+    }
+
+    protected function afterCreate(): void
+    {
+        $this->syncPatientComplaint();
+    }
+
+    protected function syncPatientComplaint(): void
+    {
+        $patientId = $this->getRecord()?->PatientId;
+
+        if (! $patientId) {
+            return;
+        }
+
+        $complainOf = data_get($this->form->getRawState(), 'patient_complain_of');
+
+        Patient::query()
+            ->where('Id', $patientId)
+            ->update([
+                'complain_of' => filled($complainOf) ? trim((string) $complainOf) : null,
+            ]);
     }
 }

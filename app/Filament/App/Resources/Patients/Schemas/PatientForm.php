@@ -48,8 +48,6 @@ class PatientForm
                     ->imageQuality(80)
                     ->shouldDeleteOnEdit(false),
 
-                Textarea::make('complain_of'),
-
                 Textarea::make('history_of')
                     ->label('History of'),
 

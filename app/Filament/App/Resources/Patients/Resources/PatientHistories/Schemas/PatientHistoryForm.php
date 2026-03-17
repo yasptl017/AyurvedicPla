@@ -67,6 +67,10 @@ class PatientHistoryForm
                                         Textarea::make('patient_complain_of')
                                             ->label('Complain Of')
                                             ->afterStateHydrated(function ($component) use ($record) {
+                                                if ($component->getState() !== null) {
+                                                    return;
+                                                }
+
                                                 $patientId = $record?->PatientId ?? request()->route('patient');
 
                                                 if (! $patientId) {
@@ -77,7 +81,6 @@ class PatientHistoryForm
                                                     Patient::query()->where('Id', $patientId)->value('complain_of')
                                                 );
                                             })
-                                            ->disabled()
                                             ->dehydrated(false)
                                             ->rows(2),
 
