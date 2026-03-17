@@ -157,7 +157,7 @@ class MedicinesRelationManager extends RelationManager
                     ->color('gray')
                     ->requiresConfirmation()
                     ->modalHeading('Auto-order Medicines Alphabetically')
-                    ->modalDescription('This will assign sequential order numbers to all medicines (except hidden ones) sorted A→Z by name. Any existing custom order will be overwritten.')
+                    ->modalDescription('This will assign sequential order numbers to all medicines sorted A→Z by name. Any existing custom order will be overwritten.')
                     ->action(function (): void {
                         $this->reorderAlphabetically();
                     }),
@@ -170,13 +170,13 @@ class MedicinesRelationManager extends RelationManager
                             ->where('DiseaseTypeId', $this->getOwnerRecord()->Id)
                             ->whereHas('medicine')
                             ->with(['medicine' => fn ($q) => $q->select(['Id', 'Name'])])
-                            ->orderByRaw('CASE WHEN OrderNumber IS NULL THEN 1 ELSE 0 END, CASE WHEN OrderNumber = -1 THEN 1 ELSE 0 END, OrderNumber ASC')
-                            ->select(['Id', 'MedicineId', 'OrderNumber', 'DeletedDate'])
+                            ->orderByRaw('CASE WHEN OrderNumber IS NULL THEN 1 ELSE 0 END, OrderNumber ASC')
+                            ->select(['Id', 'MedicineId', 'OrderNumber'])
                             ->get()
                             ->map(fn ($item) => [
                                 'pivot_id' => $item->Id,
                                 'medicine_name' => $item->medicine?->Name ?? '-',
-                                'OrderNumber' => $item->OrderNumber,
+                                'OrderNumber' => $item->OrderNumber >= 1 ? $item->OrderNumber : null,
                             ])
                             ->values()
                             ->toArray();
@@ -216,22 +216,38 @@ class MedicinesRelationManager extends RelationManager
                             ->pluck('OrderNumber', 'Id')
                             ->toArray();
 
-                        // Build map of pivot_id => new requested OrderNumber
+                        // Build map of pivot_id => new requested OrderNumber (only non-hidden items are dehydrated)
                         $requested = [];
                         foreach ($data['medicines'] as $item) {
-                            $requested[(int) $item['pivot_id']] = $item['OrderNumber'] === null ? null : (int) $item['OrderNumber'];
+                            $pivotId = (int) $item['pivot_id'];
+                            $newOrder = $item['OrderNumber'] === null ? null : (int) $item['OrderNumber'];
+                            // Clamp: never allow saving 0 or negative via this form
+                            if ($newOrder !== null && $newOrder < 1) {
+                                $newOrder = 1;
+                            }
+                            $requested[$pivotId] = $newOrder;
                         }
 
-                        // Detect items whose OrderNumber actually changed
-                        $changed = [];
+                        // Separate items that already had a position from those that had none (NULL).
+                        // Previously unordered items are assigned directly — no shifting needed.
+                        $newArrivals = [];
+                        $moves = [];
+
                         foreach ($requested as $pivotId => $newOrder) {
-                            $oldOrder = $current[$pivotId] ?? null;
-                            if ($newOrder !== null && (int) $newOrder !== (int) $oldOrder) {
-                                $changed[$pivotId] = ['old' => (int) $oldOrder, 'new' => (int) $newOrder];
+                            if ($newOrder === null) {
+                                continue;
+                            }
+                            $oldOrder = isset($current[$pivotId]) ? (int) $current[$pivotId] : null;
+
+                            if ($oldOrder === null || $oldOrder < 1) {
+                                $newArrivals[$pivotId] = $newOrder;
+                            } elseif ($newOrder !== $oldOrder) {
+                                $moves[$pivotId] = ['old' => $oldOrder, 'new' => $newOrder];
                             }
                         }
 
-                        foreach ($changed as $pivotId => $move) {
+                        // Apply shifts for items that already had a valid order position
+                        foreach ($moves as $pivotId => $move) {
                             $oldOrder = $move['old'];
                             $newOrder = $move['new'];
 
@@ -240,6 +256,7 @@ class MedicinesRelationManager extends RelationManager
                                 DiseaseTypeMedicine::query()
                                     ->where('DiseaseTypeId', $diseaseTypeId)
                                     ->where('Id', '!=', $pivotId)
+                                    ->where('OrderNumber', '>=', 1)
                                     ->whereBetween('OrderNumber', [$newOrder, $oldOrder - 1])
                                     ->increment('OrderNumber', 1, [
                                         'ModifiedBy' => $userId,
@@ -250,6 +267,7 @@ class MedicinesRelationManager extends RelationManager
                                 DiseaseTypeMedicine::query()
                                     ->where('DiseaseTypeId', $diseaseTypeId)
                                     ->where('Id', '!=', $pivotId)
+                                    ->where('OrderNumber', '>=', 1)
                                     ->whereBetween('OrderNumber', [$oldOrder + 1, $newOrder])
                                     ->decrement('OrderNumber', 1, [
                                         'ModifiedBy' => $userId,
@@ -266,18 +284,20 @@ class MedicinesRelationManager extends RelationManager
                                 ]);
                         }
 
-                        // Save items that kept their value or have null/-1 (no shift needed)
-                        foreach ($requested as $pivotId => $newOrder) {
-                            if (! isset($changed[$pivotId])) {
-                                DiseaseTypeMedicine::query()
-                                    ->where('Id', $pivotId)
-                                    ->update([
-                                        'OrderNumber' => $newOrder,
-                                        'ModifiedBy' => $userId,
-                                        'ModifiedDate' => $now,
-                                    ]);
-                            }
+                        // Directly assign order for previously-unordered medicines (no shifting)
+                        foreach ($newArrivals as $pivotId => $newOrder) {
+                            DiseaseTypeMedicine::query()
+                                ->where('Id', $pivotId)
+                                ->update([
+                                    'OrderNumber' => $newOrder,
+                                    'ModifiedBy' => $userId,
+                                    'ModifiedDate' => $now,
+                                ]);
                         }
+
+                        // After all moves, run a final normalisation pass to close any gaps
+                        // and ensure no order value falls below 1.
+                        $this->normaliseOrderNumbers($diseaseTypeId, $userId, $now);
                     }),
             ])->recordActions([
                 Action::make('editDetails')
@@ -411,21 +431,18 @@ class MedicinesRelationManager extends RelationManager
     }
 
     /**
-     * Rebuild OrderNumber for all medicines of this disease type sorted
-     * alphabetically by medicine name. Medicines with OrderNumber = -1 are skipped.
+     * Rebuild OrderNumber for all medicines of this disease type sorted alphabetically by name.
      */
     protected function reorderAlphabetically(): void
     {
         $now = now();
         $userId = auth()->id();
 
-        // Load all active pivot rows for this disease type (exclude -1 hidden ones)
         $rows = DiseaseTypeMedicine::query()
             ->where('DiseaseTypeId', $this->getOwnerRecord()->Id)
-            ->where(fn ($q) => $q->whereNull('OrderNumber')->orWhere('OrderNumber', '!=', -1))
             ->whereHas('medicine')
             ->with(['medicine' => fn ($q) => $q->select(['Id', 'Name'])])
-            ->select(['Id', 'MedicineId', 'OrderNumber'])
+            ->select(['Id', 'MedicineId'])
             ->get()
             ->sortBy(fn ($row) => strtolower($row->medicine?->Name ?? ''))
             ->values();
@@ -447,5 +464,31 @@ class MedicinesRelationManager extends RelationManager
             ->where('DiseaseTypeId', $this->getOwnerRecord()->Id)
             ->where('OrderNumber', '>=', 1)
             ->max('OrderNumber') ?? 0) + 1;
+    }
+
+    /**
+     * Re-sequence all medicines for the given disease type so there are no gaps.
+     */
+    protected function normaliseOrderNumbers(string $diseaseTypeId, mixed $userId, mixed $now): void
+    {
+        $rows = DiseaseTypeMedicine::query()
+            ->where('DiseaseTypeId', $diseaseTypeId)
+            ->whereHas('medicine')
+            ->orderBy('OrderNumber')
+            ->select(['Id', 'OrderNumber'])
+            ->get();
+
+        foreach ($rows as $index => $row) {
+            $expected = $index + 1;
+            if ((int) $row->OrderNumber !== $expected) {
+                DiseaseTypeMedicine::query()
+                    ->where('Id', $row->Id)
+                    ->update([
+                        'OrderNumber' => $expected,
+                        'ModifiedBy' => $userId,
+                        'ModifiedDate' => $now,
+                    ]);
+            }
+        }
     }
 }
