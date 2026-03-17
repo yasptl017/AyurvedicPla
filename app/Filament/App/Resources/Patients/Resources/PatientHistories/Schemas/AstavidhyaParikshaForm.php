@@ -57,15 +57,10 @@ class AstavidhyaParikshaForm
                                         'vat' => 'વાત – ↑ HR ↓ Volume',
                                         'pit' => 'પિત – ↑ HR ↑ Volume',
                                         'kaf' => 'કફ – ↓ HR ↑ Volume',
-                                    ])
-                                    ->columnSpanFull(),
-
-                                Radio::make('Mala')
-                                    ->label(self::labelWithReset('મળ', 'Mala'))
-                                    ->options([
                                         'kshina' => 'ક્ષીણ',
                                         'aam' => 'આમ',
-                                    ]),
+                                    ])
+                                    ->columnSpanFull(),
 
                                 Radio::make('Mal')
                                     ->label(self::labelWithReset('મલ', 'Mal'))
@@ -75,10 +70,13 @@ class AstavidhyaParikshaForm
                                         'ibs' => 'IBS',
                                     ]),
 
-                                Textarea::make('Mutra')
-                                    ->label(new HtmlString('<strong>મુત્ર</strong>'))
-                                    ->rows(2)
-                                    ->columnSpanFull(),
+                                Radio::make('Mutra')
+                                    ->label(self::labelWithReset('મુત્ર', 'Mutra'))
+                                    ->options([
+                                        'samyak' => 'સમ્યક',
+                                        'alpa' => 'અલ્પ',
+                                        'vadhare' => 'વધારે',
+                                    ]),
 
                                 Radio::make('Jihva')
                                     ->label(self::labelWithReset('જીહવા', 'Jihva'))
