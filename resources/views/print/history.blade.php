@@ -7,35 +7,50 @@
     <link rel="stylesheet" href="{{ asset('style.css') }}">
 </head>
 <body onload="window.print()">
+@php
+    $patientName = trim(implode(' ', array_filter([
+        $patient->FirstName,
+        $patient->MiddleName,
+        $patient->LastName,
+    ])));
+    $patientName = $patientName !== '' ? $patientName : 'Patient';
+    $patientDate = $history->CreatedDate?->timezone(config('app.timezone'))->format('d/m/Y') ?? '-';
+    $patientWeight = filled($patient->Weight) ? $patient->Weight . ' kg' : '-';
+    $patientAddress = filled($patient->Address) ? $patient->Address : '-';
+    $patientAge = filled($patient->AgeYear) ? $patient->AgeYear . ' Years' : '-';
+    $patientMobile = filled($patient->MobileNo) ? $patient->MobileNo : '-';
+@endphp
 <div class="prescription-container">
-    <div class="info-grid">
-        <div class="info-item">
-            <strong>Name:</strong>
-            <span>{{ $patient->FirstName }} {{ $patient->MiddleName }} {{ $patient->LastName }}</span>
+    <div class="patient-details">
+        <div class="detail-row detail-row--name">
+            <div class="detail-pair">
+                <span class="detail-label">Name:</span>
+                <span class="detail-value">{{ $patientName }}</span>
+            </div>
+            <div class="detail-pair">
+                <span class="detail-label">Date:</span>
+                <span class="detail-value">{{ $patientDate }}</span>
+            </div>
         </div>
-        <div class="info-item text-right">
-            <strong>Date:</strong>
-            <span>{{ $history->CreatedDate?->timezone(config('app.timezone'))->format('d/m/Y') }}</span>
+        <div class="detail-row detail-row--address">
+            <div class="detail-pair">
+                <span class="detail-label">Weight:</span>
+                <span class="detail-value">{{ $patientWeight }}</span>
+            </div>
+            <div class="detail-pair">
+                <span class="detail-label">Address/City:</span>
+                <span class="detail-value">{{ $patientAddress }}</span>
+            </div>
         </div>
-        <div class="info-item">
-            <strong>Diagnosis:</strong>
-            <span>{{ $history->diseases->pluck('Name')->join(' - ') }}</span>
-        </div>
-        <div class="info-item text-right">
-            <strong>Weight:</strong>
-            <span>{{ $patient->Weight }} kg</span>
-        </div>
-        <div class="info-item">
-            <strong>Address/City:</strong>
-            <span>{{ $patient->Address }}</span>
-        </div>
-        <div class="info-item text-right">
-            <strong>Age:</strong>
-            <span>{{ $patient->AgeYear }} Years</span>
-        </div>
-        <div class="info-item">
-            <strong>Mobile:</strong>
-            <span>{{ $patient->MobileNo }}</span>
+        <div class="detail-row detail-row--contact">
+            <div class="detail-pair">
+                <span class="detail-label">Age:</span>
+                <span class="detail-value">{{ $patientAge }}</span>
+            </div>
+            <div class="detail-pair">
+                <span class="detail-label">Mobile:</span>
+                <span class="detail-value">{{ $patientMobile }}</span>
+            </div>
         </div>
     </div>
 
