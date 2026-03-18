@@ -44,6 +44,10 @@ class MedicineResource extends Resource
 
     protected static ?string $navigationLabel = 'Medicines';
 
+    protected static ?string $modelLabel = 'Medicine';
+
+    protected static ?string $pluralModelLabel = 'Medicines';
+
     protected static ?int $navigationSort = 2;
 
     protected static bool $isScopedToTenant = false;
