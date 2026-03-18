@@ -28,6 +28,7 @@ use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -175,11 +176,12 @@ class MedicineResource extends Resource
     {
         return $table
             ->modifyQueryUsing(function (Builder $query): Builder {
-                if (! Filament::getTenant()) {
-                    return $query;
-                }
+                $clinicId = Filament::getTenant()?->Id;
 
-                return $query->whereHas('medicine', fn (Builder $medicine) => $medicine->where('ClinicId', Filament::getTenant()->Id));
+                return $query->orderByRaw(
+                    'CASE WHEN EXISTS (SELECT 1 FROM `Medicines` WHERE `Medicines`.`Id` = `DiseaseTypeMedicines`.`MedicineId` AND `Medicines`.`ClinicId` = ?) THEN 0 ELSE 1 END',
+                    [$clinicId]
+                );
             })
             ->columns([
                 TextColumn::make('diseaseType.disease.Name')
@@ -190,7 +192,10 @@ class MedicineResource extends Resource
                     ->searchable(),
                 TextColumn::make('medicine.Name')
                     ->label('Medicine')
-                    ->searchable(),
+                    ->searchable()
+                    ->color(fn ($record) => $record->medicine?->ClinicId ? 'success' : null)
+                    ->icon(fn ($record) => $record->medicine?->ClinicId ? 'heroicon-m-star' : null)
+                    ->tooltip(fn ($record) => $record->medicine?->ClinicId ? 'Added by your clinic' : null),
                 TextColumn::make('medicine.medicineForm.Name')
                     ->label('Medicine Form'),
                 TextColumn::make('Dose'),
@@ -204,7 +209,15 @@ class MedicineResource extends Resource
                     ->label('Company Name')
                     ->searchable(),
             ])
-            ->filters([TrashedFilter::make()])
+            ->filters([
+                Filter::make('my_medicines')
+                    ->label('My Medicines Only')
+                    ->query(fn (Builder $query) => $query->whereHas(
+                        'medicine',
+                        fn (Builder $q) => $q->where('ClinicId', Filament::getTenant()?->Id)
+                    )),
+                TrashedFilter::make(),
+            ])
             ->recordActions([
                 EditAction::make(),
                 DeleteAction::make(),
