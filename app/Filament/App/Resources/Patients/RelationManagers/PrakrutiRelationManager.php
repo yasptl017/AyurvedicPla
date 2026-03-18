@@ -32,10 +32,11 @@ class PrakrutiRelationManager extends RelationManager
                                     ->hiddenLabel()
                                     ->options(
                                         $items->mapWithKeys(function ($item) {
-                                            $label = "({$item->mainPrakruti->Name}) $item->Symptoms";
-                                            return [$item->Symptoms => $label];
+                                            $label = "({$item->mainPrakruti->Name}) ".trim($item->Symptoms);
+
+                                            return [$item->Id => $label];
                                         })->toArray()
-                                    )
+                                    ),
                             ]);
 
                     })
@@ -66,7 +67,7 @@ class PrakrutiRelationManager extends RelationManager
                     ->mutateDataUsing(function (array $data) {
                         return $this->processPrakrutiData($data);
                     })->createAnother(false)
-                    ->hidden(fn($livewire) => $livewire->getOwnerRecord()->prakruti !== null),
+                    ->hidden(fn ($livewire) => $livewire->getOwnerRecord()->prakruti !== null),
 
             ])
             ->recordActions([
@@ -78,16 +79,15 @@ class PrakrutiRelationManager extends RelationManager
             ]);
     }
 
-
     protected function processPrakrutiData(array $data): array
     {
-        // 1. Extract the selected symptoms (the values from the radio buttons)
+        // 1. Extract the selected IDs (the values from the radio buttons)
         // We filter out any null values just in case
-        $selectedSymptoms = array_filter(array_values($data));
+        $selectedIds = array_filter(array_values($data));
 
-        // 2. Query the DB to find which Dosha these symptoms belong to
+        // 2. Query the DB to find which Dosha these IDs belong to
         $prakrutiMap = MainPrakrutiBodyPartOrFood::query()
-            ->whereIn('Symptoms', $selectedSymptoms)
+            ->whereIn('Id', $selectedIds)
             ->with('mainPrakruti')
             ->get();
 
@@ -123,14 +123,12 @@ class PrakrutiRelationManager extends RelationManager
             'VatCount' => $counts['Vata'],
             'PitCount' => $counts['Pitta'],
             'KufCount' => $counts['Kapha'],
-            'VatPercentage' => (int)round($vatPct),
-            'PitPercentage' => (int)round($pitPct),
-            'KufPercentage' => (int)round($kufPct),
+            'VatPercentage' => (int) round($vatPct),
+            'PitPercentage' => (int) round($pitPct),
+            'KufPercentage' => (int) round($kufPct),
             'Total' => $total,
 
             'IsDeleted' => 0,
         ];
     }
-
-
 }
