@@ -11,7 +11,7 @@ class PatientHistoryPanchakarma extends Pivot
 {
     use HasUuids, AuditFields;
 
-    protected $table = 'PatientHistoryPanchakarmas';
+    protected $table = 'patienthistorypanchakarmas';
 
     protected $attributes = [
         'IsDeleted' => false,

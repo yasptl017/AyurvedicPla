@@ -14,7 +14,7 @@ class MigrateOldUsersCommand extends Command
 
     public function handle(): void
     {
-        $entities = DB::table('PatientHistoryRogaPariksas')->get()->map(function ($item) {
+        $entities = DB::table('patienthistoryrogapariksas')->get()->map(function ($item) {
             return [
                 'PatientHistoryId' => $item->PatientHistoryId,
                 'RogaPariksaId' => $item->RogaPariksaId,

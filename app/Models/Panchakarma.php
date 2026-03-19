@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Panchakarma extends Model
 {
     protected $primaryKey = "Id";
-    protected $table = 'Panchakarmas';
+    protected $table = 'panchakarmas';
 
     public function getCreatedAtColumn(): string
     {

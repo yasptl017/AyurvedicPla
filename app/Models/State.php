@@ -9,7 +9,7 @@ class State extends Model
 {
     use AuditFields;
 
-    protected $table = 'States';
+    protected $table = 'states';
 
     protected function casts(): array
     {

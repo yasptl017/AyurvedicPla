@@ -11,7 +11,7 @@ class PatientHistoryMedicine extends Pivot
 {
     use AuditFields, HasUuids;
 
-    protected $table = 'PatientHistoryMedicines';
+    protected $table = 'patienthistorymedicines';
 
     public function patientHistory(): BelongsTo
     {

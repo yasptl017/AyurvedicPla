@@ -10,7 +10,7 @@ class ModernSymptom extends Model
 {
     use AuditFields, HasUuids;
 
-    protected $table = 'ModernSymptoms';
+    protected $table = 'modernsymptoms';
     protected $attributes = [
         'IsPrivate' => false
     ];

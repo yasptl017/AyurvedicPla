@@ -9,7 +9,7 @@ class MedicineForm extends Model
 {
     use AuditFields;
 
-    protected $table = 'MedicineForms';
+    protected $table = 'medicineforms';
 
     protected function casts(): array
     {

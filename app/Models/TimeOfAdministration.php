@@ -9,7 +9,7 @@ class TimeOfAdministration extends Model
 {
     use AuditFields;
 
-    protected $table = 'TimeOfAdministrations';
+    protected $table = 'timeofadministrations';
 
     protected function casts(): array
     {

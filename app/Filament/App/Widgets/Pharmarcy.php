@@ -25,7 +25,7 @@ class Pharmarcy extends TableWidget
                 ->whereHas('patient', fn ($query) => $query->where('ClinicId', Filament::getTenant()->Id))
                 ->whereIn(DB::raw('(PatientId, CreatedDate)'), function ($query) {
                     $query->select('PatientId', DB::raw('MAX(CreatedDate)'))
-                        ->from('PatientHistories')
+                        ->from('patienthistories')
                         ->groupBy('PatientId');
                 })
                 ->latest('CreatedDate'))

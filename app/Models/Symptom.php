@@ -10,16 +10,16 @@ class Symptom extends Model
 {
     use AuditFields;
 
-    protected $table = 'Symptoms';
+    protected $table = 'symptoms';
 
     public function diseases(): BelongsToMany
     {
-        return $this->belongsToMany(Disease::class, 'DiseaseSymptoms', 'SymptomId', 'DiseaseId')->withPivot('IsMain');
+        return $this->belongsToMany(Disease::class, 'diseasesymptoms', 'SymptomId', 'DiseaseId')->withPivot('IsMain');
     }
 
     public function diseaseTypes(): BelongsToMany
     {
-        return $this->belongsToMany(DiseaseType::class, 'DiseaseTypeSymptoms', 'SymptomId', 'DiseaseTypeId')->withPivot('IsMain');
+        return $this->belongsToMany(DiseaseType::class, 'diseasetypesymptoms', 'SymptomId', 'DiseaseTypeId')->withPivot('IsMain');
     }
 
     protected function casts(): array

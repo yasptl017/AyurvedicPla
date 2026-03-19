@@ -9,7 +9,7 @@ class Anupana extends Model
 {
     use AuditFields;
 
-    protected $table = 'Anupanas';
+    protected $table = 'anupanas';
 
     protected function casts(): array
     {

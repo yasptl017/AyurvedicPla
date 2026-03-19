@@ -11,7 +11,7 @@ class DiseaseType extends Model
 {
     use AuditFields;
 
-    protected $table = 'DiseaseTypes';
+    protected $table = 'diseasetypes';
 
     public function disease(): BelongsTo
     {
@@ -20,13 +20,13 @@ class DiseaseType extends Model
 
     public function symptoms(): BelongsToMany
     {
-        return $this->belongsToMany(Symptom::class, 'DiseaseTypeSymptoms', 'DiseaseTypeId', 'SymptomId')->withPivot('IsMain');
+        return $this->belongsToMany(Symptom::class, 'diseasetypesymptoms', 'DiseaseTypeId', 'SymptomId')->withPivot('IsMain');
     }
 
     public function medicines(): BelongsToMany
     {
         return $this->belongsToMany(
-            Medicine::class, 'DiseaseTypeMedicines', 'DiseaseTypeId', 'MedicineId')
+            Medicine::class, 'diseasetypemedicines', 'DiseaseTypeId', 'MedicineId')
             ->withPivot([
                 'Id',
                 'Dose',

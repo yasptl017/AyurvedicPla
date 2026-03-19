@@ -11,7 +11,7 @@ class PatientPrakruti extends Model
 {
     use AuditFields, HasUuids;
 
-    protected $table = 'PatientPrakrutis';
+    protected $table = 'patientprakrutis';
 
     public function patient(): belongsto
     {

@@ -10,7 +10,7 @@ class City extends Model
 {
     use AuditFields;
 
-    protected $table = 'Cities';
+    protected $table = 'cities';
 
     public function state(): BelongsTo
     {

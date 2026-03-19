@@ -9,6 +9,6 @@ class PatientHistoryModernSymptom extends Pivot
 {
     use HasUuids;
 
-    protected $table = 'PatientHistoryModernSymptom';
+    protected $table = 'patienthistorymodernsymptom';
 
 }

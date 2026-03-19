@@ -13,7 +13,7 @@ class AstavidhyaPariksha extends Model
 
     public $timestamps = false;
 
-    protected $table = 'AstavidhyaParikshas';
+    protected $table = 'astavidhyaparikshas';
 
     protected $attributes = [
         'DeletedBy' => '0000-0000-0000-0000',

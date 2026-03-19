@@ -13,7 +13,7 @@ class PatientHistoryDisease extends Pivot
     use HasUuids, AuditFields;
 
     protected $primaryKey = 'Id';
-    protected $table = 'PatientHistoryDiseases';
+    protected $table = 'patienthistorydiseases';
 
     public function disease(): BelongsTo
     {

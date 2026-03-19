@@ -17,7 +17,7 @@ class PatientHistory extends Model implements Eventable
 {
     use AuditFields, HasUuids;
 
-    protected $table = 'PatientHistories';
+    protected $table = 'patienthistories';
 
     protected $attributes = [
         'ConsultationFee' => 0.0,
@@ -31,7 +31,7 @@ class PatientHistory extends Model implements Eventable
 
     public function diseases(): BelongsToMany
     {
-        return $this->belongsToMany(Disease::class, 'PatientHistoryDiseases', 'PatientHistoryId', 'DiseaseId')->withPivot([
+        return $this->belongsToMany(Disease::class, 'patienthistorydiseases', 'PatientHistoryId', 'DiseaseId')->withPivot([
             'DiseaseId',
             'DiseaseTypeId',
         ])->using(PatientHistoryDisease::class);
@@ -39,7 +39,7 @@ class PatientHistory extends Model implements Eventable
 
     public function symptoms(): BelongsToMany
     {
-        return $this->belongsToMany(Symptom::class, 'PatientHistorySymptoms', 'PatientHistoryId', 'SymptomId')->using(PatientHistorySymptom::class);
+        return $this->belongsToMany(Symptom::class, 'patienthistorysymptoms', 'PatientHistoryId', 'SymptomId')->using(PatientHistorySymptom::class);
     }
 
     public function womenHistory(): HasOne
@@ -65,7 +65,7 @@ class PatientHistory extends Model implements Eventable
 
     public function modernSymptoms(): BelongsToMany
     {
-        return $this->belongsToMany(ModernSymptom::class, 'PatientHistoryModernSymptom', 'PatientHistoryId', 'SymptomId')->using(PatientHistoryModernSymptom::class);
+        return $this->belongsToMany(ModernSymptom::class, 'patienthistorymodernsymptom', 'PatientHistoryId', 'SymptomId')->using(PatientHistoryModernSymptom::class);
     }
 
     public function hetuPariksa(): HasOne
@@ -75,7 +75,7 @@ class PatientHistory extends Model implements Eventable
 
     public function panchakarmas(): BelongsToMany
     {
-        return $this->belongsToMany(Panchakarma::class, 'PatientHistoryPanchakarmas', 'PatientHistoryId', 'PanchakarmaId')->using(PatientHistoryPanchakarma::class)->withPivot('Detail');
+        return $this->belongsToMany(Panchakarma::class, 'patienthistorypanchakarmas', 'PatientHistoryId', 'PanchakarmaId')->using(PatientHistoryPanchakarma::class)->withPivot('Detail');
 
     }
 

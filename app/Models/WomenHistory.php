@@ -12,7 +12,7 @@ class WomenHistory extends Model
 
     public $timestamps = false;
     protected $primaryKey = 'Id';
-    protected $table = 'WomenHistories';
+    protected $table = 'womenhistories';
 
     public function patientHistory(): BelongsTo
     {

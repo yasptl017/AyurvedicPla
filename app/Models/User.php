@@ -21,7 +21,7 @@ class User extends Authenticatable implements FilamentUser, HasTenants
     use HasFactory, Notifiable, HasUuids;
 
     public $timestamps = false;
-    protected $table = 'AspNetUsers';
+    protected $table = 'aspnetusers';
     protected $primaryKey = "Id";
     /**
      * The attributes that should be hidden for serialization.
@@ -40,7 +40,7 @@ class User extends Authenticatable implements FilamentUser, HasTenants
 
     public function clinics(): BelongsToMany
     {
-        return $this->belongsToMany(Clinic::class, 'DoctorUsers', 'UserId', 'DoctorId')->withPivot('role')->using(DoctorUser::class);
+        return $this->belongsToMany(Clinic::class, 'doctorusers', 'UserId', 'DoctorId')->withPivot('role')->using(DoctorUser::class);
     }
 
     public function canAccessTenant(Model $tenant): bool

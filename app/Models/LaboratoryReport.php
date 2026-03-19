@@ -10,11 +10,11 @@ class LaboratoryReport extends Model
 {
     use AuditFields;
 
-    protected $table = 'LaboratoryReports';
+    protected $table = 'laboratoryreports';
 
     public function diseases(): BelongsToMany
     {
-        return $this->belongsToMany(Disease::class, 'DiseaseLaboratoryReports', 'LaboratoryReportId', 'DiseaseId');
+        return $this->belongsToMany(Disease::class, 'diseaselaboratoryreports', 'LaboratoryReportId', 'DiseaseId');
     }
 
     protected function casts(): array

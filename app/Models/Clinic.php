@@ -12,11 +12,11 @@ class Clinic extends Model implements HasName
 {
     use AuditFields;
 
-    protected $table = 'Doctors';
+    protected $table = 'doctors';
 
     public function users(): BelongsToMany
     {
-        return $this->belongsToMany(User::class, 'DoctorUsers', 'DoctorId', 'UserId')->withPivot('role')->using(DoctorUser::class);
+        return $this->belongsToMany(User::class, 'doctorusers', 'DoctorId', 'UserId')->withPivot('role')->using(DoctorUser::class);
     }
 
     public function calendarAppointments(): HasMany

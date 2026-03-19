@@ -10,7 +10,7 @@ class RogaPariksa extends Model
 {
     use AuditFields, HasUuids;
 
-    protected $table = 'RogaPariksas';
+    protected $table = 'rogapariksas';
 
     protected $attributes = [
         'DeletedBy' => '',

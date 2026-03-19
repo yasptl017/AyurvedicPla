@@ -13,7 +13,7 @@ class HetuPariksa extends Model
 
     public $timestamps = false;
 
-    protected $table = 'HetuPariksas';
+    protected $table = 'hetupariksas';
 
     protected $attributes = [
         'DeletedBy' => '0000-0000-0000-0000',

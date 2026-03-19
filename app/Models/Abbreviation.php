@@ -9,7 +9,7 @@ class Abbreviation extends Model
 {
     use AuditFields;
 
-    protected $table = 'Abbreviations';
+    protected $table = 'abbreviations';
 
     protected function casts(): array
     {

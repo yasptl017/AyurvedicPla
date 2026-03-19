@@ -12,7 +12,7 @@ class PatientHistoryVital extends Model
 
     public $timestamps = false;
     protected $primaryKey = 'Id';
-    protected $table = 'PatientHistoryVitals';
+    protected $table = 'patienthistoryvitals';
 
     public function patientHistory(): BelongsTo
     {

@@ -9,7 +9,7 @@ class BodyPartOrFood extends Model
 {
     use AuditFields;
 
-    protected $table = 'BodyPartOrFoods';
+    protected $table = 'bodypartorfoods';
 
     protected function casts(): array
     {

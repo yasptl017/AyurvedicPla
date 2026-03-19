@@ -13,7 +13,7 @@ class Patient extends Model
 {
     use AuditFields, HasUuids;
 
-    protected $table = 'Patients';
+    protected $table = 'patients';
 
     public function clinic(): BelongsTo
     {

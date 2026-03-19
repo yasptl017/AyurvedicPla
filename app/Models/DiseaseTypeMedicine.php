@@ -10,7 +10,7 @@ class DiseaseTypeMedicine extends Model
 {
     use AuditFields;
 
-    protected $table = 'DiseaseTypeMedicines';
+    protected $table = 'diseasetypemedicines';
 
     protected $attributes = [
         'DeletedBy' => '',

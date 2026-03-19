@@ -13,7 +13,7 @@ class CalendarAppointment extends Model implements Eventable
 {
     use AuditFields, HasUuids;
 
-    protected $table = 'CalendarAppointments';
+    protected $table = 'calendarappointments';
 
     public function clinic(): BelongsTo
     {

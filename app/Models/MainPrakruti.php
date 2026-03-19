@@ -9,7 +9,7 @@ class MainPrakruti extends Model
 {
     use AuditFields;
 
-    protected $table = 'MainPrakrutis';
+    protected $table = 'mainprakrutis';
 
     protected function casts(): array
     {

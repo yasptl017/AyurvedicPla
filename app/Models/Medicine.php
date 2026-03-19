@@ -11,7 +11,7 @@ class Medicine extends Model
 {
     use AuditFields;
 
-    protected $table = 'Medicines';
+    protected $table = 'medicines';
 
     public function medicineForm(): BelongsTo
     {
@@ -21,7 +21,7 @@ class Medicine extends Model
     public function diseaseTypes(): BelongsToMany
     {
 
-        return $this->belongsToMany(DiseaseType::class, 'DiseaseTypeMedicines', 'MedicineId', 'DiseaseTypeId');
+        return $this->belongsToMany(DiseaseType::class, 'diseasetypemedicines', 'MedicineId', 'DiseaseTypeId');
     }
 
     public function clinic(): BelongsTo

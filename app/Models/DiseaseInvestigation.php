@@ -10,7 +10,7 @@ class DiseaseInvestigation extends Model
 {
     use AuditFields;
 
-    protected $table = 'DiseaseInvestigations';
+    protected $table = 'diseaseinvestigations';
 
     public function disease(): BelongsTo
     {

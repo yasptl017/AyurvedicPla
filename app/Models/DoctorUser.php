@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
 
 class DoctorUser extends Pivot
 {
-    protected $table = 'DoctorUsers';
+    protected $table = 'doctorusers';
     protected $primaryKey = 'Id';
 
     protected function casts(): array

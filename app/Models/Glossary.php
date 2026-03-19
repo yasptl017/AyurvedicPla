@@ -9,7 +9,7 @@ class Glossary extends Model
 {
     use AuditFields;
 
-    protected $table = 'Glossaries';
+    protected $table = 'glossaries';
 
     protected function casts(): array
     {

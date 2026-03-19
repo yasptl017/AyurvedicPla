@@ -10,7 +10,7 @@ class MainPrakrutiBodyPartOrFood extends Model
 {
     use AuditFields;
 
-    protected $table = 'MainPrakrutiBodyPartOrFoods';
+    protected $table = 'mainprakrutibodypartorfoods';
 
     public function bodyPartOrFood(): BelongsTo
     {
