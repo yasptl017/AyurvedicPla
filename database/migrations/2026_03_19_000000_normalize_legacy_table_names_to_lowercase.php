@@ -22,8 +22,26 @@ return new class extends Migration
         foreach ($renames as $from => $to) {
             $actualFrom = $this->findTable($from, $tables);
 
-            if ($actualFrom === null || $actualFrom === $to || $this->findTable($to, $tables) !== null) {
+            if ($actualFrom === null || $actualFrom === $to || in_array($to, $tables, true)) {
                 continue;
+            }
+
+            // Some MySQL setups can be finicky about case-only renames, so
+            // rename through a temporary table name first when needed.
+            if (strcasecmp($actualFrom, $to) === 0) {
+                $temporary = '__tmp_' . $to . '_' . substr(md5($actualFrom), 0, 8);
+
+                Schema::rename($actualFrom, $temporary);
+
+                $index = array_search($actualFrom, $tables, true);
+
+                if ($index !== false) {
+                    $tables[$index] = $temporary;
+                } else {
+                    $tables[] = $temporary;
+                }
+
+                $actualFrom = $temporary;
             }
 
             Schema::rename($actualFrom, $to);
