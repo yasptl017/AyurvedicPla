@@ -1,6 +1,5 @@
 @php
     use Illuminate\Database\Eloquent\Model;
-    use Illuminate\Support\Facades\Storage;
     use Illuminate\Support\Str;
 
     /** @var \App\Models\PatientHistory $record */
@@ -35,26 +34,6 @@
             ->reject(fn ($value, $key) => $excludedKeys->contains(strtolower($key)))
             ->filter(fn ($value) => $isMeaningful($value))
             ->all();
-    };
-
-    $getFileUrl = function (?string $path): ?string {
-        if (! filled($path)) {
-            return null;
-        }
-
-        if (Str::startsWith($path, ['http://', 'https://', 'data:', '/'])) {
-            return $path;
-        }
-
-        if (Str::startsWith($path, 'storage/')) {
-            return asset($path);
-        }
-
-        try {
-            return Storage::url($path);
-        } catch (\Throwable $e) {
-            return $path;
-        }
     };
 
     $isImagePath = function (?string $path): bool {
@@ -391,15 +370,15 @@
                             @foreach ($patientReports as $item)
                                 @php
                                     $path = $item->capture;
-                                    $url = $getFileUrl($path);
+                                    $openUrl = route('patient.records.view', ['record' => $item->getKey()]);
                                 @endphp
                                 <div style="border:1px solid #e5e7eb;border-radius:8px;padding:10px;">
                                     <div style="font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.04em;">Report {{ $loop->iteration }}</div>
-                                    @if ($url)
-                                        <a href="{{ $url }}" target="_blank" style="display:inline-block;margin:6px 0 8px;font-size:12px;color:#2563eb;text-decoration:underline;">Open file</a>
+                                    @if ($openUrl)
+                                        <a href="{{ $openUrl }}" target="_blank" style="display:inline-block;margin:6px 0 8px;font-size:12px;color:#2563eb;text-decoration:underline;">Open file</a>
                                     @endif
-                                    @if ($url && $isImagePath($path))
-                                        <img src="{{ $url }}" alt="Patient report {{ $loop->iteration }}" style="width:100%;max-height:220px;object-fit:contain;border:1px solid #e5e7eb;border-radius:6px;background:#f9fafb;" />
+                                    @if ($openUrl && $isImagePath($path))
+                                        <img src="{{ $openUrl }}" alt="Patient report {{ $loop->iteration }}" style="width:100%;max-height:220px;object-fit:contain;border:1px solid #e5e7eb;border-radius:6px;background:#f9fafb;" />
                                     @endif
                                 </div>
                             @endforeach
@@ -410,10 +389,8 @@
                         <div x-cloak x-show="detailModal === 'sketches'" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;">
                             @foreach ($sketches as $item)
                                 @php
-                                    $path = $item->sketch;
-                                    $url = $getFileUrl($path);
-                                    $openUrl = route('patient.sketches.view', ['record' => $item->id]);
-                                    $previewUrl = $url ?: $openUrl;
+                                    $openUrl = route('patient.sketches.view', ['record' => $item->getKey()]);
+                                    $previewUrl = $openUrl;
                                 @endphp
                                 <div style="border:1px solid #e5e7eb;border-radius:8px;padding:10px;">
                                     <div style="font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.04em;">Sketch {{ $loop->iteration }}</div>
@@ -433,15 +410,15 @@
                             @foreach ($captures as $item)
                                 @php
                                     $path = $item->capture;
-                                    $url = $getFileUrl($path);
+                                    $openUrl = route('patient.captures.view', ['record' => $item->getKey()]);
                                 @endphp
                                 <div style="border:1px solid #e5e7eb;border-radius:8px;padding:10px;">
                                     <div style="font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.04em;">Capture {{ $loop->iteration }}</div>
-                                    @if ($url)
-                                        <a href="{{ $url }}" target="_blank" style="display:inline-block;margin:6px 0 8px;font-size:12px;color:#2563eb;text-decoration:underline;">Open file</a>
+                                    @if ($openUrl)
+                                        <a href="{{ $openUrl }}" target="_blank" style="display:inline-block;margin:6px 0 8px;font-size:12px;color:#2563eb;text-decoration:underline;">Open file</a>
                                     @endif
-                                    @if ($url)
-                                        <img src="{{ $url }}" alt="Capture {{ $loop->iteration }}" style="width:100%;max-height:220px;object-fit:contain;border:1px solid #e5e7eb;border-radius:6px;background:#f9fafb;" />
+                                    @if ($openUrl)
+                                        <img src="{{ $openUrl }}" alt="Capture {{ $loop->iteration }}" style="width:100%;max-height:220px;object-fit:contain;border:1px solid #e5e7eb;border-radius:6px;background:#f9fafb;" />
                                     @endif
                                 </div>
                             @endforeach
@@ -453,7 +430,7 @@
                             @foreach ($patientFiles as $item)
                                 @php
                                     $path = $item->File;
-                                    $openUrl = route('patient.files.download', ['record' => $item->id]);
+                                    $openUrl = route('patient.files.download', ['record' => $item->getKey()]);
                                 @endphp
                                 <div style="border:1px solid #e5e7eb;border-radius:8px;padding:10px;">
                                     <div style="font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.04em;">File {{ $loop->iteration }}</div>
@@ -581,4 +558,3 @@
         </div>
     @endif
 </div>
-

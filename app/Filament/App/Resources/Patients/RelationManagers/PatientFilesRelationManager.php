@@ -52,7 +52,10 @@ class PatientFilesRelationManager extends RelationManager
                 Stack::make([
                     // --- A. IMAGE PREVIEW ---
                     ImageColumn::make('File')
-                        ->disk('local')
+                        ->state(fn ($record) => route('patient.files.download', ['record' => $record->getKey()]))
+                        ->checkFileExistence(false)
+                        ->url(fn ($record) => route('patient.files.download', ['record' => $record->getKey()]))
+                        ->openUrlInNewTab()
                         ->height('160px') // Fixed height for consistency
                         ->width('100%')
                         ->extraImgAttributes(['class' => 'object-cover w-full rounded-t-xl'])
@@ -94,7 +97,7 @@ class PatientFilesRelationManager extends RelationManager
                     ->label('View')
                     ->icon(Heroicon::Eye)
                     ->color('primary')
-                    ->url(fn($record) => route('patient.files.download', ['record' => $record->id]))
+                    ->url(fn($record) => route('patient.files.download', ['record' => $record->getKey()]))
                     ->openUrlInNewTab()
                     ->button() // Makes it look like a button
                     ->size('xs'),

@@ -2,6 +2,7 @@
 
 namespace App\Filament\App\Resources\Patients\RelationManagers;
 
+use Filament\Actions\Action;
 use emmanpbarrameda\FilamentTakePictureField\Forms\Components\TakePicture;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
@@ -11,6 +12,7 @@ use Filament\Actions\DissociateBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
+use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Table;
 
@@ -43,6 +45,10 @@ class CapturesRelationManager extends RelationManager
             ])
             ->columns([
                 ImageColumn::make('capture')
+                    ->state(fn ($record) => route('patient.captures.view', ['record' => $record->getKey()]))
+                    ->checkFileExistence(false)
+                    ->url(fn ($record) => route('patient.captures.view', ['record' => $record->getKey()]))
+                    ->openUrlInNewTab()
             ])
             ->filters([
                 //
@@ -51,6 +57,12 @@ class CapturesRelationManager extends RelationManager
                 CreateAction::make(),
             ])
             ->recordActions([
+                Action::make('view')
+                    ->label('View')
+                    ->icon(Heroicon::Eye)
+                    ->color('primary')
+                    ->url(fn ($record) => route('patient.captures.view', ['record' => $record->getKey()]))
+                    ->openUrlInNewTab(),
                 EditAction::make(),
                 DeleteAction::make(),
             ])

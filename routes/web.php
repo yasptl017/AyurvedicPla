@@ -1,8 +1,12 @@
 <?php
 
+use App\Models\ImageCapture;
+use App\Models\Patient;
 use App\Models\PatientFile;
 use App\Models\PatientHistory;
+use App\Models\PatientRecord;
 use App\Models\Sketch;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -11,51 +15,22 @@ Route::get('/orders/{history}/print', function (PatientHistory $history) {
     return view('print.history', ['history' => $history, 'clinic' => $history->clinic, 'patient' => $history->patient]);
 })->name('order.print');
 
-
-Route::get('/patient-files/{record}', function (PatientFile $record) {
-
-    if (!$record->patient || !$record->patient->clinic) {
+$authorizePatientMedia = function (?Patient $patient, string $label): void {
+    if (! $patient || ! $patient->clinic) {
         abort(404);
     }
 
-    $hasAccess = auth()->user()->clinics()
-        ->whereKey($record->patient->clinic->Id)
-        ->exists();
-
-    if (!$hasAccess) {
-        abort(403, 'Unauthorized access to this file.');
-    }
-
-    $path = $record->File;
-
-    if (!Storage::disk('local')->exists($path)) {
-        abort(404);
-    }
-
-    return Storage::disk('local')->response($path);
-
-
-})->middleware(['auth'])->name('patient.files.download');
-
-Route::get('/patient-sketches/{record}', function (Sketch $record) {
-
-    $patient = $record->patient ?? $record->patientHistory?->patient;
-
-    if (!$patient || !$patient->clinic) {
-        abort(404);
-    }
-
-    $hasAccess = auth()->user()->clinics()
+    $hasAccess = auth()->user()?->clinics()
         ->whereKey($patient->clinic->Id)
         ->exists();
 
-    if (!$hasAccess) {
-        abort(403, 'Unauthorized access to this sketch.');
+    if (! $hasAccess) {
+        abort(403, "Unauthorized access to this {$label}.");
     }
+};
 
-    $value = $record->sketch;
-
-    if (!filled($value)) {
+$streamStoredMedia = function (?string $value) {
+    if (! filled($value)) {
         abort(404);
     }
 
@@ -80,13 +55,45 @@ Route::get('/patient-sketches/{record}', function (Sketch $record) {
         return redirect($value);
     }
 
-    if (Storage::disk('public')->exists($value)) {
-        return Storage::disk('public')->response($value);
+    $publicPaths = array_unique(array_filter([
+        $value,
+        Str::startsWith($value, 'storage/') ? Str::after($value, 'storage/') : null,
+        Str::startsWith($value, '/storage/') ? Str::after($value, '/storage/') : null,
+    ]));
+
+    foreach ($publicPaths as $path) {
+        if (Storage::disk('public')->exists($path)) {
+            return Storage::disk('public')->response($path, basename($path), [], 'inline');
+        }
     }
 
     if (Storage::disk('local')->exists($value)) {
-        return Storage::disk('local')->response($value);
+        return Storage::disk('local')->response($value, basename($value), [], 'inline');
     }
 
     abort(404);
+};
+
+Route::get('/patient-files/{record}', function (PatientFile $record) use ($authorizePatientMedia, $streamStoredMedia) {
+    $authorizePatientMedia($record->patient ?? $record->patientHistory?->patient, 'file');
+
+    return $streamStoredMedia($record->File);
+})->middleware(['auth'])->name('patient.files.download');
+
+Route::get('/patient-sketches/{record}', function (Sketch $record) use ($authorizePatientMedia, $streamStoredMedia) {
+    $authorizePatientMedia($record->patient ?? $record->patientHistory?->patient, 'sketch');
+
+    return $streamStoredMedia($record->sketch);
 })->middleware(['auth'])->name('patient.sketches.view');
+
+Route::get('/patient-captures/{record}', function (ImageCapture $record) use ($authorizePatientMedia, $streamStoredMedia) {
+    $authorizePatientMedia($record->patient ?? $record->patientHistory?->patient, 'capture');
+
+    return $streamStoredMedia($record->capture);
+})->middleware(['auth'])->name('patient.captures.view');
+
+Route::get('/patient-records/{record}', function (PatientRecord $record) use ($authorizePatientMedia, $streamStoredMedia) {
+    $authorizePatientMedia($record->patient ?? $record->patientHistory?->patient, 'report');
+
+    return $streamStoredMedia($record->capture);
+})->middleware(['auth'])->name('patient.records.view');
