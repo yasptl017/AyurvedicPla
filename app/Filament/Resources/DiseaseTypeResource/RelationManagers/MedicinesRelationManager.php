@@ -40,7 +40,7 @@ class MedicinesRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
-            ->defaultSort('DiseaseTypeMedicines.OrderNumber', 'asc')
+            ->defaultSort('diseasetypemedicines.OrderNumber', 'asc')
             ->columns([
                 TextColumn::make('pivot.OrderNumber')
                     ->label('Order')
@@ -127,7 +127,7 @@ class MedicinesRelationManager extends RelationManager
                         }
 
                         $attachedMedicineIds = $this->getOwnerRecord()->medicines()
-                            ->pluck('Medicines.Id')
+                            ->pluck('medicines.Id')
                             ->map(fn ($id) => (int) $id)
                             ->all();
 

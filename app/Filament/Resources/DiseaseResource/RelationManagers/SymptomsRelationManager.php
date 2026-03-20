@@ -35,7 +35,7 @@ class SymptomsRelationManager extends RelationManager
                     ->form([
                         CheckboxList::make('symptoms')
                             ->options(fn () => Symptom::query()->pluck('Name', 'Id')->toArray())
-                            ->default(fn () => $this->getOwnerRecord()->symptoms()->pluck('Symptoms.Id')->toArray())
+                            ->default(fn () => $this->getOwnerRecord()->symptoms()->pluck('symptoms.Id')->toArray())
                             ->searchable()
                             ->bulkToggleable()
                             ->columns(2),

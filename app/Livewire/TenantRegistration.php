@@ -45,7 +45,7 @@ class TenantRegistration extends RegisterTenant
                 Select::make('CityId')
                     ->label('city')
                     ->options(fn(Get $get): array => City::query()
-                        ->where('Cities.StateId', $get('StateId'))
+                        ->where('cities.StateId', $get('StateId'))
                         ->pluck('Name', 'Id')
                         ->toArray()
                     )

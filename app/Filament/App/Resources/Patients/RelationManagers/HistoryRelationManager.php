@@ -60,7 +60,7 @@ class HistoryRelationManager extends RelationManager
             ])
             ->when($search !== '', fn (Builder $query) => $query->whereHas(
                 'diseases',
-                fn (Builder $diseaseQuery) => $diseaseQuery->where('Diseases.Name', 'like', "%{$search}%")
+                fn (Builder $diseaseQuery) => $diseaseQuery->where('diseases.Name', 'like', "%{$search}%")
             ))
             ->latest('CreatedDate')
             ->get();
@@ -103,7 +103,7 @@ class HistoryRelationManager extends RelationManager
             $newHistory->diseases()->attach($diseases);
 
             $newHistory->symptoms()->attach($record->symptoms()->pluck('SymptomId'));
-            $newHistory->modernSymptoms()->attach($record->modernSymptoms()->pluck('ModernSymptoms.Id'));
+            $newHistory->modernSymptoms()->attach($record->modernSymptoms()->pluck('modernsymptoms.Id'));
 
             $panchakarmas = $record->panchakarmas()->withPivot(['Detail'])->get()
                 ->mapWithKeys(fn ($item) => [

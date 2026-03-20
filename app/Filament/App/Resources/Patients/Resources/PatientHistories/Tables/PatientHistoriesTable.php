@@ -46,7 +46,7 @@ class PatientHistoriesTable
                     ->label('')
                     ->searchable(query: fn (Builder $query, string $search) => $query->whereHas(
                         'diseases',
-                        fn (Builder $q) => $q->where('Diseases.Name', 'like', "%{$search}%")
+                        fn (Builder $q) => $q->where('diseases.Name', 'like', "%{$search}%")
                     ))
                     ->toggleable(isToggledHiddenByDefault: true),
 
@@ -61,7 +61,7 @@ class PatientHistoriesTable
                     ->searchable()
                     ->query(fn (Builder $query, array $data) => $query->when(
                         $data['value'],
-                        fn (Builder $q, $id) => $q->whereHas('diseases', fn (Builder $d) => $d->where('Diseases.Id', $id))
+                        fn (Builder $q, $id) => $q->whereHas('diseases', fn (Builder $d) => $d->where('diseases.Id', $id))
                     )),
 
                 SelectFilter::make('medicine')

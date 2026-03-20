@@ -179,7 +179,7 @@ class MedicineResource extends Resource
                 $clinicId = Filament::getTenant()?->Id;
 
                 return $query->orderByRaw(
-                    'CASE WHEN EXISTS (SELECT 1 FROM `Medicines` WHERE `Medicines`.`Id` = `DiseaseTypeMedicines`.`MedicineId` AND `Medicines`.`ClinicId` = ?) THEN 0 ELSE 1 END',
+                    'CASE WHEN EXISTS (SELECT 1 FROM `medicines` WHERE `medicines`.`Id` = `diseasetypemedicines`.`MedicineId` AND `medicines`.`ClinicId` = ?) THEN 0 ELSE 1 END',
                     [$clinicId]
                 );
             })

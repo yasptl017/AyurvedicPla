@@ -108,7 +108,7 @@ class PatientHistoryForm
                                     ->relationship(
                                         name: 'diseases',
                                         titleAttribute: 'Name',
-                                        modifyQueryUsing: fn ($query) => $query->select(['Diseases.Id', 'Diseases.Name'])
+                                        modifyQueryUsing: fn ($query) => $query->select(['diseases.Id', 'diseases.Name'])
                                     )
                                     ->preload()
                                     ->searchable()
@@ -140,7 +140,7 @@ class PatientHistoryForm
                                         ->whereHas('diseaseTypes', fn ($q) => $q->whereIn('diseaseId', $get('diseases'))
                                         )
                                         ->distinct()
-                                        ->select(['Symptoms.Id', 'Symptoms.Name'])
+                                        ->select(['symptoms.Id', 'symptoms.Name'])
                                     )
                                     ->columnSpan(2)
                                     ->preload(),
@@ -149,7 +149,7 @@ class PatientHistoryForm
                                         name: 'modernSymptoms',
                                         titleAttribute: 'Name',
                                         modifyQueryUsing: fn ($query) => $query
-                                            ->select(['ModernSymptoms.Id', 'ModernSymptoms.Name'])
+                                            ->select(['modernsymptoms.Id', 'modernsymptoms.Name'])
                                             ->orderBy('Name'),
                                     )
                                     ->multiple()
@@ -1018,7 +1018,7 @@ class PatientHistoryForm
         }
 
         $diseaseTypes = DiseaseType::query()->with(['symptoms' => function ($q) {
-            $q->select('Symptoms.Id', 'Symptoms.Name', 'Symptoms.NameEnglish', 'Symptoms.NameGujarati');
+            $q->select('symptoms.Id', 'symptoms.Name', 'symptoms.NameEnglish', 'symptoms.NameGujarati');
         }])->whereIn('diseaseId', $diseaseIds)
             ->get();
 
