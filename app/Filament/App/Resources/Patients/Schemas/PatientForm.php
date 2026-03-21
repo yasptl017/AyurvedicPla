@@ -17,6 +17,7 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Filament\Support\Enums\Width;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 
 class PatientForm
@@ -108,7 +109,7 @@ class PatientForm
             return $state;
         }
 
-        return route('patient.images.view', ['record' => $record]);
+        return static::getPatientImagePreviewUrl($record) ?? $state;
     }
 
     protected static function restorePatientImageState(?string $state, ?Patient $record): ?string
@@ -117,11 +118,22 @@ class PatientForm
             return $state;
         }
 
-        if ($state === route('patient.images.view', ['record' => $record])) {
+        $previewUrl = static::getPatientImagePreviewUrl($record);
+
+        if ($previewUrl && $state === $previewUrl) {
             return $record->getRawOriginal('Image') ?: $record->Image;
         }
 
         return $state;
+    }
+
+    protected static function getPatientImagePreviewUrl(?Patient $record): ?string
+    {
+        if (! $record?->exists || ! Route::has('patient.images.view')) {
+            return null;
+        }
+
+        return route('patient.images.view', ['record' => $record]);
     }
 
     public static function getPrakrutiCalculationSchema(): array
