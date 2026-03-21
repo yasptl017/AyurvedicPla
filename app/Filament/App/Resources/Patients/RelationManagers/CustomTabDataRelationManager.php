@@ -15,7 +15,11 @@ class CustomTabDataRelationManager extends RelationManager
     public function form(Schema $schema): Schema
     {
         return $schema->schema([
-            SignaturePad::make('Sketch')->columnSpanFull()
+            SignaturePad::make('Sketch')
+                ->penColor('#000000')
+                ->penColorOnDark('#000000')
+                ->exportPenColor('#000000')
+                ->columnSpanFull()
         ]);
     }
 

@@ -953,6 +953,9 @@ class PatientHistoryForm
                                 ->label('ScratchPad')
                                 ->schema([
                                     SignaturePad::make('sketch')
+                                        ->penColor('#000000')
+                                        ->penColorOnDark('#000000')
+                                        ->exportPenColor('#000000')
                                         ->required()
                                         ->columnSpanFull(),
                                 ])
