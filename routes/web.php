@@ -51,7 +51,39 @@ $streamStoredMedia = function (?string $value) {
         return response($value, 200, ['Content-Type' => 'image/svg+xml']);
     }
 
-    if (Str::startsWith($value, ['http://', 'https://', '/'])) {
+    if (Str::startsWith($value, ['http://', 'https://'])) {
+        $publicDiskUrl = config('filesystems.disks.public.url');
+        $resolvedStoragePath = null;
+
+        if (filled($publicDiskUrl)) {
+            $valueUrl = parse_url($value);
+            $publicUrl = parse_url($publicDiskUrl);
+            $publicUrlHost = $publicUrl['host'] ?? null;
+            $publicUrlPath = rtrim($publicUrl['path'] ?? '', '/');
+            $valueUrlHost = $valueUrl['host'] ?? null;
+            $valueUrlPath = $valueUrl['path'] ?? '';
+
+            if (
+                filled($publicUrlHost) &&
+                filled($valueUrlHost) &&
+                strcasecmp($valueUrlHost, $publicUrlHost) === 0 &&
+                filled($publicUrlPath) &&
+                Str::startsWith($valueUrlPath, "{$publicUrlPath}/")
+            ) {
+                $resolvedStoragePath = Str::after($valueUrlPath, "{$publicUrlPath}/");
+            }
+        }
+
+        if (filled($resolvedStoragePath)) {
+            $value = $resolvedStoragePath;
+        } else {
+            return redirect($value);
+        }
+    }
+
+    if (Str::startsWith($value, '/storage/')) {
+        $value = Str::after($value, '/storage/');
+    } elseif (Str::startsWith($value, '/')) {
         return redirect($value);
     }
 
@@ -79,6 +111,12 @@ Route::get('/patient-files/{record}', function (PatientFile $record) use ($autho
 
     return $streamStoredMedia($record->File);
 })->middleware(['auth'])->name('patient.files.download');
+
+Route::get('/patient-images/{record}', function (Patient $record) use ($authorizePatientMedia, $streamStoredMedia) {
+    $authorizePatientMedia($record, 'image');
+
+    return $streamStoredMedia($record->Image);
+})->middleware(['auth'])->name('patient.images.view');
 
 Route::get('/patient-sketches/{record}', function (Sketch $record) use ($authorizePatientMedia, $streamStoredMedia) {
     $authorizePatientMedia($record->patient ?? $record->patientHistory?->patient, 'sketch');

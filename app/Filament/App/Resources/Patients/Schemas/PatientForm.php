@@ -3,6 +3,7 @@
 namespace App\Filament\App\Resources\Patients\Schemas;
 
 use App\Models\MainPrakrutiBodyPartOrFood;
+use App\Models\Patient;
 use emmanpbarrameda\FilamentTakePictureField\Forms\Components\TakePicture;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
@@ -16,6 +17,7 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Filament\Support\Enums\Width;
+use Illuminate\Support\Str;
 
 class PatientForm
 {
@@ -46,7 +48,9 @@ class PatientForm
                     ->showCameraSelector()
                     ->aspect('16:9')
                     ->imageQuality(80)
-                    ->shouldDeleteOnEdit(false),
+                    ->shouldDeleteOnEdit(false)
+                    ->formatStateUsing(fn (?string $state, ?Patient $record): ?string => static::getPatientImagePreviewState($state, $record))
+                    ->mutateDehydratedStateUsing(fn (?string $state, ?Patient $record): ?string => static::restorePatientImageState($state, $record)),
 
                 Textarea::make('history_of')
                     ->label('History of'),
@@ -92,6 +96,32 @@ class PatientForm
                     ]),
 
             ])->columns(3);
+    }
+
+    protected static function getPatientImagePreviewState(?string $state, ?Patient $record): ?string
+    {
+        if (blank($state) || ! $record?->exists) {
+            return $state;
+        }
+
+        if (Str::startsWith($state, 'data:image/')) {
+            return $state;
+        }
+
+        return route('patient.images.view', ['record' => $record]);
+    }
+
+    protected static function restorePatientImageState(?string $state, ?Patient $record): ?string
+    {
+        if (blank($state) || ! $record?->exists) {
+            return $state;
+        }
+
+        if ($state === route('patient.images.view', ['record' => $record])) {
+            return $record->getRawOriginal('Image') ?: $record->Image;
+        }
+
+        return $state;
     }
 
     public static function getPrakrutiCalculationSchema(): array
