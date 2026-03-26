@@ -17,6 +17,49 @@ body {
     box-sizing: border-box;
 }
 
+.prescription-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 16px;
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #d5d5d5;
+}
+
+.prescription-header__logo-wrap {
+    flex: 0 0 auto;
+}
+
+.prescription-header__logo {
+    width: 78px;
+    max-height: 78px;
+    object-fit: contain;
+}
+
+.prescription-header__content {
+    flex: 1;
+    min-width: 0;
+    text-align: center;
+}
+
+.prescription-header__title {
+    margin: 0 0 4px;
+    font-size: 20px;
+    line-height: 1.2;
+    color: #111;
+}
+
+.prescription-header__line {
+    margin: 2px 0;
+    color: #333;
+    word-break: break-word;
+}
+
+.prescription-header__inline-item {
+    margin-left: 14px;
+}
+
 .patient-details-table {
     width: 100%;
     border-collapse: collapse;
@@ -91,7 +134,27 @@ body {
     color: #333;
 }
 
+.prescription-warnings {
+    margin-top: 8px;
+}
+
+.prescription-warning {
+    margin: 4px 0 0;
+    color: #333;
+}
+
 @media screen and (max-width: 700px) {
+    .prescription-header {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .prescription-header__inline-item {
+        display: inline-block;
+        margin-left: 0;
+        margin-right: 12px;
+    }
+
     .patient-details-table,
     .patient-details-table tbody,
     .patient-details-table tr,
