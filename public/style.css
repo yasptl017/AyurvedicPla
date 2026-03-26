@@ -17,52 +17,45 @@ body {
     box-sizing: border-box;
 }
 
-.patient-details {
+.patient-details-table {
+    width: 100%;
+    border-collapse: collapse;
     margin-bottom: 14px;
     font-size: 12.5px;
+    table-layout: fixed;
 }
 
-.detail-row {
-    display: grid;
-    gap: 8px 18px;
-    margin-bottom: 6px;
+.patient-details-table td {
+    border: none;
+    padding: 2px 0;
+    vertical-align: top;
 }
 
-.detail-row--name {
-    grid-template-columns: minmax(0, 1.4fr) minmax(0, 0.9fr);
+.patient-details-cell {
+    width: 50%;
 }
 
-.detail-row--address,
-.detail-row--contact {
-    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.4fr);
+.patient-details-cell--left {
+    padding-right: 18px;
 }
 
-.detail-row:last-child {
-    margin-bottom: 0;
+.patient-details-cell--right {
+    padding-left: 18px;
 }
 
-.detail-pair {
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr);
-    align-items: end;
-    column-gap: 8px;
-    min-width: 0;
-}
-
-.detail-label {
+.patient-details-label {
+    display: inline;
     font-weight: 600;
     color: #111;
     white-space: nowrap;
+    margin-right: 6px;
 }
 
-.detail-value {
-    display: block;
-    min-width: 0;
-    min-height: 16px;
-    padding-bottom: 3px;
-    border-bottom: 1px solid #d5d5d5;
+.patient-details-value {
+    display: inline;
     color: #222;
     word-break: break-word;
+    white-space: normal;
 }
 
 .prescription-table {
@@ -98,12 +91,25 @@ body {
     color: #333;
 }
 
-@media (max-width: 700px) {
-    .detail-row,
-    .detail-row--name,
-    .detail-row--address,
-    .detail-row--contact {
-        grid-template-columns: 1fr;
+@media screen and (max-width: 700px) {
+    .patient-details-table,
+    .patient-details-table tbody,
+    .patient-details-table tr,
+    .patient-details-table td {
+        display: block;
+    }
+
+    .patient-details-cell,
+    .patient-details-cell--left,
+    .patient-details-cell--right {
+        width: auto;
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    .patient-details-cell--right {
+        padding-left: 0;
+        padding-top: 4px;
     }
 }
 
@@ -128,5 +134,25 @@ body {
         margin: 0;
         padding: 2mm 1mm;
         box-shadow: none;
+    }
+
+    .patient-details-table {
+        table-layout: fixed;
+    }
+
+    .patient-details-table tbody {
+        display: table-row-group;
+    }
+
+    .patient-details-table tr {
+        display: table-row;
+    }
+
+    .patient-details-table td {
+        display: table-cell;
+    }
+
+    .patient-details-cell--right {
+        padding-left: 18px;
     }
 }

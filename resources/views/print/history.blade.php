@@ -21,38 +21,40 @@
     $patientMobile = filled($patient->MobileNo) ? $patient->MobileNo : '-';
 @endphp
 <div class="prescription-container">
-    <div class="patient-details">
-        <div class="detail-row detail-row--name">
-            <div class="detail-pair">
-                <span class="detail-label">Name:</span>
-                <span class="detail-value">{{ $patientName }}</span>
-            </div>
-            <div class="detail-pair">
-                <span class="detail-label">Date:</span>
-                <span class="detail-value">{{ $patientDate }}</span>
-            </div>
-        </div>
-        <div class="detail-row detail-row--address">
-            <div class="detail-pair">
-                <span class="detail-label">Weight:</span>
-                <span class="detail-value">{{ $patientWeight }}</span>
-            </div>
-            <div class="detail-pair">
-                <span class="detail-label">Address/City:</span>
-                <span class="detail-value">{{ $patientAddress }}</span>
-            </div>
-        </div>
-        <div class="detail-row detail-row--contact">
-            <div class="detail-pair">
-                <span class="detail-label">Age:</span>
-                <span class="detail-value">{{ $patientAge }}</span>
-            </div>
-            <div class="detail-pair">
-                <span class="detail-label">Mobile:</span>
-                <span class="detail-value">{{ $patientMobile }}</span>
-            </div>
-        </div>
-    </div>
+    <table class="patient-details-table">
+        <tbody>
+        <tr>
+            <td class="patient-details-cell patient-details-cell--left">
+                <span class="patient-details-label">Name:</span>
+                <span class="patient-details-value">{{ $patientName }}</span>
+            </td>
+            <td class="patient-details-cell patient-details-cell--right">
+                <span class="patient-details-label">Date:</span>
+                <span class="patient-details-value">{{ $patientDate }}</span>
+            </td>
+        </tr>
+        <tr>
+            <td class="patient-details-cell patient-details-cell--left">
+                <span class="patient-details-label">Mobile:</span>
+                <span class="patient-details-value">{{ $patientMobile }}</span>
+            </td>
+            <td class="patient-details-cell patient-details-cell--right">
+                <span class="patient-details-label">Age:</span>
+                <span class="patient-details-value">{{ $patientAge }}</span>
+            </td>
+        </tr>
+        <tr>
+            <td class="patient-details-cell patient-details-cell--left">
+                <span class="patient-details-label">Address:</span>
+                <span class="patient-details-value">{{ $patientAddress }}</span>
+            </td>
+            <td class="patient-details-cell patient-details-cell--right">
+                <span class="patient-details-label">Weight:</span>
+                <span class="patient-details-value">{{ $patientWeight }}</span>
+            </td>
+        </tr>
+        </tbody>
+    </table>
 
     <table class="prescription-table">
         <thead>
@@ -79,7 +81,7 @@
 
     <div class="footer">
         <div class="follow-up">
-            <p class="gujarati-text">ફરી બતાવવાની તારીખ: <u>{{ $history->NextAppointmentDate?->timezone(config('app.timezone'))->format('d/m/Y') }}</u></p>
+            <p class="gujarati-text">ફરી બતાવવાની તારીખ: {{ $history->NextAppointmentDate?->timezone(config('app.timezone'))->format('d/m/Y') }}</p>
         </div>
     </div>
 </div>
