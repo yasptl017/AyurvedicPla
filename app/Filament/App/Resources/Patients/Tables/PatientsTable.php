@@ -3,16 +3,19 @@
 namespace App\Filament\App\Resources\Patients\Tables;
 
 use App\Models\AwaitingPatientEntry;
+use App\Models\PatientHistory;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreBulkAction;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Select;
 use Filament\Facades\Filament;
 use Filament\Notifications\Notification;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Filters\TrashedFilter;
+use Filament\Tables\Filters\Filter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Str;
@@ -53,22 +56,67 @@ class PatientsTable
                     ->date('d/m/Y')
                     ->sortable(),
 
-                // 4. Weight (Simple numeric with unit suffix)
-                TextColumn::make('Weight')
-                    ->numeric()
-                    ->suffix(' kg')
-                    ->sortable(),
-
-                // 5. STACKED: Phone with Address below
+                // 4. STACKED: Phone with Address below
                 TextColumn::make('MobileNo')
                     ->label('Contact')
                     ->icon('heroicon-m-phone')
                     ->copyable() // Nice UX feature to copy number
                     ->description(fn($record) => Str::limit($record->Address, 30))
                     ->searchable(['MobileNo', 'Address']),
+
+                TextColumn::make('first_visit_date')
+                    ->label('First Visit')
+                    ->date('d/m/Y')
+                    ->sortable(),
+
+                TextColumn::make('last_visit_date')
+                    ->label('Last Visit')
+                    ->date('d/m/Y')
+                    ->sortable(),
+
+                TextColumn::make('next_appointment_date')
+                    ->label('Next Appointment')
+                    ->date('d/m/Y')
+                    ->sortable(),
             ])
             ->defaultSort('BirthDate', 'desc')->filters([
-                TrashedFilter::make(),
+                Filter::make('visit_date_range')
+                    ->label('Visit Dates')
+                    ->form([
+                        Select::make('date_field')
+                            ->label('Date Type')
+                            ->options([
+                                'first_visit_date' => 'First Visit',
+                                'last_visit_date' => 'Last Visit',
+                                'next_appointment_date' => 'Next Appointment',
+                            ]),
+                        DatePicker::make('from')->label('From')->displayFormat('d/m/Y')->native(false),
+                        DatePicker::make('until')->label('To')->displayFormat('d/m/Y')->native(false),
+                    ])
+                    ->query(fn (Builder $query, array $data): Builder => static::applyVisitDateRangeFilter($query, $data))
+                    ->indicateUsing(function (array $data): array {
+                        $labels = [
+                            'first_visit_date' => 'First Visit',
+                            'last_visit_date' => 'Last Visit',
+                            'next_appointment_date' => 'Next Appointment',
+                        ];
+
+                        $indicators = [];
+
+                        if ($data['date_field'] ?? null) {
+                            $indicators[] = 'Date Type: '.$labels[$data['date_field']];
+                        }
+
+                        if ($data['from'] ?? null) {
+                            $indicators[] = 'From: '.\Carbon\Carbon::parse($data['from'])->format('d/m/Y');
+                        }
+
+                        if ($data['until'] ?? null) {
+                            $indicators[] = 'To: '.\Carbon\Carbon::parse($data['until'])->format('d/m/Y');
+                        }
+
+                        return $indicators;
+                    }),
             ])
             ->recordActions([
                 Action::make('addToWaitingList')
@@ -90,6 +138,19 @@ class PatientsTable
                 EditAction::make(),
             ])
             ->modifyQueryUsing(fn (Builder $query) => $query
+                ->addSelect([
+                    'first_visit_date' => PatientHistory::query()
+                        ->selectRaw('MIN(CreatedDate)')
+                        ->whereColumn('PatientId', 'patients.Id'),
+                    'last_visit_date' => PatientHistory::query()
+                        ->selectRaw('MAX(CreatedDate)')
+                        ->whereColumn('PatientId', 'patients.Id'),
+                    'next_appointment_date' => PatientHistory::query()
+                        ->select('NextAppointmentDate')
+                        ->whereColumn('PatientId', 'patients.Id')
+                        ->orderByDesc('CreatedDate')
+                        ->limit(1),
+                ])
                 ->withCount('patientHistories')
                 ->withCount([
                     'awaitingEntries as active_awaiting_count' => fn (Builder $awaitingQuery) => $awaitingQuery
@@ -105,5 +166,34 @@ class PatientsTable
                     RestoreBulkAction::make(),
                 ]),
             ]);
+    }
+
+    protected static function applyVisitDateRangeFilter(Builder $query, array $data): Builder
+    {
+        $expression = static::getVisitDateExpression($data['date_field'] ?? null);
+
+        if (! $expression) {
+            return $query;
+        }
+
+        return $query
+            ->when(
+                $data['from'] ?? null,
+                fn (Builder $builder, $date) => $builder->whereRaw("({$expression}) >= ?", [$date])
+            )
+            ->when(
+                $data['until'] ?? null,
+                fn (Builder $builder, $date) => $builder->whereRaw("({$expression}) <= ?", [$date])
+            );
+    }
+
+    protected static function getVisitDateExpression(?string $field): ?string
+    {
+        return match ($field) {
+            'first_visit_date' => "select date(min(`CreatedDate`)) from `patienthistories` where `patienthistories`.`PatientId` = `patients`.`Id` and `patienthistories`.`DeletedDate` is null",
+            'last_visit_date' => "select date(max(`CreatedDate`)) from `patienthistories` where `patienthistories`.`PatientId` = `patients`.`Id` and `patienthistories`.`DeletedDate` is null",
+            'next_appointment_date' => "select date(`NextAppointmentDate`) from `patienthistories` where `patienthistories`.`PatientId` = `patients`.`Id` and `patienthistories`.`DeletedDate` is null order by `CreatedDate` desc limit 1",
+            default => null,
+        };
     }
 }
