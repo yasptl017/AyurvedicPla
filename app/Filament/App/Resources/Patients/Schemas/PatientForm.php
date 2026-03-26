@@ -149,7 +149,7 @@ class PatientForm
                             ->hiddenLabel()
                             ->options(
                                 $items->mapWithKeys(function ($item) {
-                                    return [$item->Symptoms => "({$item->mainPrakruti->Name}) $item->Symptoms"];
+                                    return [$item->Id => "({$item->mainPrakruti->Name}) $item->Symptoms"];
                                 })->toArray()
                             ),
                     ])
@@ -173,16 +173,16 @@ class PatientForm
      */
     protected static function calculateAndSetResults(array $data, Set $set): void
     {
-        // 1. Get selected symptoms from modal data
-        $selectedSymptoms = array_filter(array_values($data));
+        // 1. Get selected option IDs from modal data
+        $selectedIds = array_filter(array_values($data));
 
-        if (empty($selectedSymptoms)) {
+        if (empty($selectedIds)) {
             return;
         }
 
         // 2. Query Doshas
         $prakrutiMap = MainPrakrutiBodyPartOrFood::query()
-            ->whereIn('Symptoms', $selectedSymptoms)
+            ->whereIn('Id', $selectedIds)
             ->with('mainPrakruti')
             ->get();
 
