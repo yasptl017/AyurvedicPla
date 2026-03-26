@@ -7,6 +7,7 @@ use App\Filament\App\Resources\Patients\Resources\PatientHistories\PatientHistor
 use App\Models\Patient;
 use Filament\Actions\Action;
 use Filament\Resources\Pages\CreateRecord;
+use Filament\Support\Icons\Heroicon;
 
 class CreatePatientHistory extends CreateRecord
 {
@@ -25,37 +26,57 @@ class CreatePatientHistory extends CreateRecord
     protected function getHeaderActions(): array
     {
         return [
-            Action::make('print')
-                ->button()
-                ->color('gray')
-                ->icon('heroicon-o-printer')
-                ->disabled(),
+            $this->getSaveAndEditAction('saveHeader'),
+            $this->getPrintAction('printHeader'),
         ];
     }
 
     protected function getFormActions(): array
     {
         return [
-            Action::make('save')
-                ->label('Save')
-                ->color('primary')
-                ->action(function () {
-                    $this->create(another: false);
-                    if ($this->getRecord()) {
-                        $this->redirect(
-                            PatientHistoryResource::getUrl('edit', [
-                                'record' => $this->getRecord(),
-                                'patient' => $this->getRecord()->PatientId,
-                            ])
-                        );
-                    }
-                }),
+            $this->getSaveAndEditAction('save'),
+            $this->getPrintAction('printForm'),
 
             $this->getCreateFormAction()
                 ->label('Create'),
 
             $this->getCancelFormAction(),
         ];
+    }
+
+    protected function getSaveAndEditAction(string $name): Action
+    {
+        return Action::make($name)
+            ->label('Save')
+            ->color('primary')
+            ->action('saveAndEdit');
+    }
+
+    protected function getPrintAction(string $name): Action
+    {
+        return Action::make($name)
+            ->label('Print')
+            ->color('gray')
+            ->icon(Heroicon::Printer)
+            ->disabled(fn (): bool => blank($this->getRecord()))
+            ->url(fn (): ?string => $this->getRecord() ? route('order.print', $this->getRecord()) : null)
+            ->openUrlInNewTab();
+    }
+
+    public function saveAndEdit(): void
+    {
+        $this->create(another: false);
+
+        if (! $this->getRecord()) {
+            return;
+        }
+
+        $this->redirect(
+            PatientHistoryResource::getUrl('edit', [
+                'record' => $this->getRecord(),
+                'patient' => $this->getRecord()->PatientId,
+            ])
+        );
     }
 
     public function getBreadcrumbs(): array

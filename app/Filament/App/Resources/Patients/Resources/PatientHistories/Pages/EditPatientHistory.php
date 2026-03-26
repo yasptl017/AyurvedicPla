@@ -25,16 +25,39 @@ class EditPatientHistory extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
+            $this->getHeaderSaveAction(),
+            $this->getPrintAction('printHeader'),
             DeleteAction::make(),
             ForceDeleteAction::make(),
             RestoreAction::make(),
-            Action::make('print')
-                ->button()
-                ->color('gray')
-                ->icon(Heroicon::Printer)
-                ->url(fn (PatientHistory $record): string => route('order.print', $record))
-                ->openUrlInNewTab(),
         ];
+    }
+
+    protected function getFormActions(): array
+    {
+        return [
+            $this->getSaveFormAction(),
+            $this->getPrintAction('printForm'),
+            $this->getCancelFormAction(),
+        ];
+    }
+
+    protected function getHeaderSaveAction(): Action
+    {
+        return Action::make('saveHeader')
+            ->label('Save')
+            ->color('primary')
+            ->action('save');
+    }
+
+    protected function getPrintAction(string $name): Action
+    {
+        return Action::make($name)
+            ->label('Print')
+            ->color('gray')
+            ->icon(Heroicon::Printer)
+            ->url(fn (PatientHistory $record): string => route('order.print', $record))
+            ->openUrlInNewTab();
     }
 
     public function getBreadcrumbs(): array
