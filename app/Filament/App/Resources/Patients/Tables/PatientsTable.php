@@ -2,11 +2,15 @@
 
 namespace App\Filament\App\Resources\Patients\Tables;
 
+use App\Models\AwaitingPatientEntry;
+use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreBulkAction;
+use Filament\Facades\Filament;
+use Filament\Notifications\Notification;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
@@ -47,7 +51,6 @@ class PatientsTable
                 TextColumn::make('BirthDate')
                     ->label('Date of Birth')
                     ->date('d/m/Y')
-                    ->description(fn($record) => "{$record->AgeYear} yrs, {$record->AgeMonth} mos")
                     ->sortable(),
 
                 // 4. Weight (Simple numeric with unit suffix)
@@ -68,10 +71,33 @@ class PatientsTable
                 TrashedFilter::make(),
             ])
             ->recordActions([
+                Action::make('addToWaitingList')
+                    ->label(fn ($record) => ($record->active_awaiting_count ?? 0) > 0 ? 'In Waiting' : 'Add to Waiting')
+                    ->icon('heroicon-o-clock')
+                    ->color('warning')
+                    ->disabled(fn ($record) => ($record->active_awaiting_count ?? 0) > 0)
+                    ->action(function ($record): void {
+                        AwaitingPatientEntry::addForClinicAndPatient(
+                            clinicId: Filament::getTenant()?->Id ?? $record->ClinicId,
+                            patientId: $record->Id,
+                        );
+
+                        Notification::make()
+                            ->success()
+                            ->title('Patient added to today\'s waiting list')
+                            ->send();
+                    }),
                 EditAction::make(),
             ])
-            ->modifyQueryUsing(fn(Builder $query) => $query->withCount('patientHistories')->orderByDesc('CreatedDate'))
-            ->recordClasses(fn($record) => $record->patient_histories_count === 0 ? 'no-history-row' : null)
+            ->modifyQueryUsing(fn (Builder $query) => $query
+                ->withCount('patientHistories')
+                ->withCount([
+                    'awaitingEntries as active_awaiting_count' => fn (Builder $awaitingQuery) => $awaitingQuery
+                        ->where('ClinicId', Filament::getTenant()?->Id)
+                        ->whereDate('QueueDate', now()->timezone(config('app.timezone'))->toDateString()),
+                ])
+                ->orderByDesc('CreatedDate'))
+            ->recordClasses(fn ($record) => (($record->active_awaiting_count ?? 0) > 0 || $record->patient_histories_count === 0) ? 'no-history-row' : null)
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),

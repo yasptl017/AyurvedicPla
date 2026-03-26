@@ -36,6 +36,11 @@ class Patient extends Model
         return $this->hasMany(PatientFile::class, 'Patient_id');
     }
 
+    public function awaitingEntries(): HasMany
+    {
+        return $this->hasMany(AwaitingPatientEntry::class, 'PatientId');
+    }
+
     public function captures(): HasMany
     {
         return $this->HasMany(ImageCapture::class);

@@ -24,6 +24,20 @@ class PatientHistory extends Model implements Eventable
         'MedicinesFee' => 0.0,
     ];
 
+    protected static function booted(): void
+    {
+        static::created(function (self $history): void {
+            $clinicId = $history->patient?->ClinicId
+                ?? Patient::query()->where('Id', $history->PatientId)->value('ClinicId');
+
+            AwaitingPatientEntry::removeForClinicAndPatientOnDate(
+                clinicId: $clinicId,
+                patientId: $history->PatientId,
+                date: $history->CreatedDate,
+            );
+        });
+    }
+
     public function patient(): BelongsTo
     {
         return $this->belongsTo(Patient::class, 'PatientId');
