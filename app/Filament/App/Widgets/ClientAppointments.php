@@ -28,10 +28,24 @@ class ClientAppointments extends TableWidget
             ->columns([
                 TextColumn::make('patient')
                     ->label('Patient Name')
-                    ->formatStateUsing(fn($record) => "{$record->patient->FirstName} {$record->patient->LastName}")
+                    ->formatStateUsing(fn ($record) => trim(implode(' ', array_filter([
+                        $record->patient->FirstName,
+                        $record->patient->MiddleName,
+                        $record->patient->LastName,
+                    ]))))
                     ->searchable(['patient.FirstName', 'patient.LastName', 'patient.MiddleName', 'patient.Email'])
                     ->sortable()
                     ->weight('bold'),
+
+                TextColumn::make('patient.MobileNo')
+                    ->label('Mobile')
+                    ->searchable()
+                    ->sortable(),
+
+                TextColumn::make('patient.Address')
+                    ->label('Address')
+                    ->searchable()
+                    ->wrap(),
 
                 TextColumn::make('NextAppointmentDate')
                     ->label('Next Appointment')

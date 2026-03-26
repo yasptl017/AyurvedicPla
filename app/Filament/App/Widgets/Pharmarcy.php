@@ -33,7 +33,11 @@ class Pharmarcy extends TableWidget
                 TextColumn::make('patient')
                     ->label('Name')
                     ->searchable()
-                    ->formatStateUsing(fn ($state): string => $state->FirstName.' '.$state->LastName)
+                    ->formatStateUsing(fn ($state): string => trim(implode(' ', array_filter([
+                        $state->FirstName,
+                        $state->MiddleName,
+                        $state->LastName,
+                    ]))))
                     ->sortable(),
                 TextColumn::make('diseases.Name')
                     ->label('Clinical Details')

@@ -1,3 +1,10 @@
+@php
+    $patientFullName = trim(implode(' ', array_filter([
+        $patient->FirstName,
+        $patient->MiddleName,
+        $patient->LastName,
+    ])));
+@endphp
 <div style="font-family: Arial, sans-serif; padding: 20px;">
     <style>
         .modal-prescription-container {
@@ -158,7 +165,7 @@
         <div class="modal-info-grid">
             <div class="modal-info-item">
                 <strong>Name:</strong> 
-                <span>{{ $patient->FirstName }} {{ $patient->MiddleName }} {{ $patient->LastName }}</span>
+                <span>{{ $patientFullName }}</span>
             </div>
             <div class="modal-info-item modal-text-right">
                 <strong>Date:</strong> 

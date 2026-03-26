@@ -22,7 +22,11 @@ class PatientsTable
                 // 1. STACKED: Full Name with Email below it
                 TextColumn::make('FirstName')
                     ->label('Name')
-                    ->formatStateUsing(fn($record) => "{$record->FirstName} {$record->LastName}")
+                    ->formatStateUsing(fn ($record) => trim(implode(' ', array_filter([
+                        $record->FirstName,
+                        $record->MiddleName,
+                        $record->LastName,
+                    ]))))
                     ->description(fn($record) => $record->Email) // Stacks Email here
                     ->searchable(['FirstName', 'LastName', 'MiddleName', 'Email'])
                     ->sortable('FirstName')
