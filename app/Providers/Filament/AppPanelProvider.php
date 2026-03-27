@@ -2,10 +2,15 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\App\Pages\Appointments;
+use App\Filament\App\Pages\AwaitingPatient;
+use App\Filament\App\Pages\ClinicProfile;
 use App\Filament\Resources\MedicineResource;
 use App\Livewire\TenantRegistration;
 use App\Livewire\UserRegistration;
 use App\Models\Clinic;
+use App\Filament\App\Pages\Pharmacy;
+use App\Filament\App\Pages\Staffs;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -39,6 +44,11 @@ class AppPanelProvider extends PanelProvider
             ->discoverPages(in: app_path('Filament/App/Pages'), for: 'App\Filament\App\Pages')
             ->pages([
                 Dashboard::class,
+                Appointments::class,
+                AwaitingPatient::class,
+                ClinicProfile::class,
+                Pharmacy::class,
+                Staffs::class,
             ])
             ->resources([
                 MedicineResource::class,
