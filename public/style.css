@@ -1,5 +1,5 @@
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
     background: #fff;
     margin: 0;
     padding: 14px;
@@ -15,49 +15,99 @@ body {
     margin: 0 auto;
     padding: 12mm;
     box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
 }
 
 .prescription-header {
-    display: flex;
-    align-items: flex-start;
-    justify-content: center;
-    gap: 16px;
     margin-bottom: 14px;
     padding-bottom: 10px;
-    border-bottom: 1px solid #d5d5d5;
+    border-bottom: 2px solid #2563eb;
 }
 
-.prescription-header__logo-wrap {
-    flex: 0 0 auto;
+.prescription-header__top {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    align-items: start;
+    gap: 12px;
+    margin-bottom: 6px;
 }
 
-.prescription-header__logo {
-    width: 78px;
-    max-height: 78px;
-    object-fit: contain;
-}
-
-.prescription-header__content {
-    flex: 1;
+.prescription-header__top-item {
     min-width: 0;
+    font-size: 20px;
+    color: #b91c1c;
+}
+
+.prescription-header__top-item--left {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+}
+
+.prescription-header__top-item--center {
     text-align: center;
 }
 
+.prescription-header__top-item--right {
+    text-align: right;
+}
+
+.prescription-header__doctor,
+.prescription-header__registration,
+.prescription-header__mobile {
+    display: inline-block;
+    font-weight: 700;
+    color: #b91c1c;
+    word-break: break-word;
+}
+
+.prescription-header__doctor,
+.prescription-header__mobile {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 .prescription-header__title {
-    margin: 0 0 4px;
-    font-size: 20px;
+    margin: 0;
+    text-align: center;
+    font-size: 48px;
     line-height: 1.2;
-    color: #111;
+    color: #b91c1c;
+    font-weight: 700;
+}
+
+.prescription-header__registration-line {
+    margin: 4px 0 0;
+    text-align: left;
+    font-size: 18px;
+    color: #b91c1c;
+    font-weight: 700;
+}
+
+.prescription-header__details {
+    margin-top: 4px;
+    text-align: center;
+    color: #b91c1c;
+}
+
+.prescription-header__logo-wrap {
+    margin-bottom: 4px;
+}
+
+.prescription-header__logo {
+    width: 64px;
+    max-height: 64px;
+    object-fit: contain;
 }
 
 .prescription-header__line {
     margin: 2px 0;
-    color: #333;
+    font-size: 24px;
+    color: #b91c1c;
     word-break: break-word;
-}
-
-.prescription-header__inline-item {
-    margin-left: 14px;
 }
 
 .patient-details-table {
@@ -121,17 +171,24 @@ body {
     font-weight: 600;
 }
 
-.footer {
-    margin-top: 12px;
+.prescription-footer {
+    margin-top: auto;
+    padding-top: 14px;
 }
 
-.follow-up p {
+.prescription-footer__separator {
+    border-top: 2px solid #2563eb;
+    margin-bottom: 8px;
+}
+
+.prescription-footer__follow-up {
     margin: 0;
+    font-size: 20px;
+    color: #b91c1c;
 }
 
-.gujarati-text {
-    font-size: 12.5px;
-    color: #333;
+.prescription-footer__follow-up--inline {
+    margin-top: 10px;
 }
 
 .prescription-warnings {
@@ -140,19 +197,39 @@ body {
 
 .prescription-warning {
     margin: 4px 0 0;
-    color: #333;
+    color: #b91c1c;
+    text-align: center;
+    font-weight: 700;
+    font-size: 18px;
+}
+
+.prescription-footer__address {
+    margin: 6px 0 0;
+    color: #b91c1c;
+    text-align: center;
+    font-weight: 700;
+    font-size: 18px;
 }
 
 @media screen and (max-width: 700px) {
-    .prescription-header {
-        flex-direction: column;
-        gap: 10px;
+    .prescription-header__top {
+        grid-template-columns: 1fr;
+        gap: 4px;
     }
 
-    .prescription-header__inline-item {
-        display: inline-block;
-        margin-left: 0;
-        margin-right: 12px;
+    .prescription-header__top-item,
+    .prescription-header__top-item--left,
+    .prescription-header__top-item--center,
+    .prescription-header__top-item--right {
+        text-align: center;
+    }
+
+    .prescription-header__top-item--left {
+        align-items: center;
+    }
+
+    .prescription-header__registration-line {
+        text-align: center;
     }
 
     .patient-details-table,
@@ -197,6 +274,7 @@ body {
         margin: 0;
         padding: 2mm 1mm;
         box-shadow: none;
+        min-height: calc(297mm - 16mm);
     }
 
     .patient-details-table {

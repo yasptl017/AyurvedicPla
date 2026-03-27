@@ -42,48 +42,50 @@
     $patientMobile = filled($patient->MobileNo) ? $patient->MobileNo : '-';
 @endphp
 <div class="prescription-container">
-    @if ($clinicName || $clinicAddress || $clinicEmail || $clinicPhone1 || $clinicPhone2 || $doctorName || $doctorRegistrationNumber || $clinicLogo)
+    @if ($clinicName || $clinicAddress || $clinicEmail || $clinicPhone1 || $clinicPhone2 || $doctorName || $doctorRegistrationNumber)
         <div class="prescription-header">
-            @if ($clinicLogo)
-                <div class="prescription-header__logo-wrap">
-                    <img src="{{ $clinicLogo }}" alt="Clinic Logo" class="prescription-header__logo">
+            <div class="prescription-header__top">
+                <div class="prescription-header__top-item prescription-header__top-item--left">
+                    @if ($doctorName)
+                        <span class="prescription-header__doctor">{{ $doctorName }}</span>
+                    @endif
+
+                    @if ($doctorRegistrationNumber)
+                        <p class="prescription-header__registration-line">Reg. No.: {{ $doctorRegistrationNumber }}</p>
+                    @endif
                 </div>
+
+                <div class="prescription-header__top-item prescription-header__top-item--center">
+                </div>
+
+                <div class="prescription-header__top-item prescription-header__top-item--right">
+                    @if ($clinicPhone1)
+                        <span class="prescription-header__mobile">M: {{ $clinicPhone1 }}</span>
+                    @endif
+                </div>
+            </div>
+
+            @if ($clinicName)
+                <h1 class="prescription-header__title">{{ $clinicName }}</h1>
             @endif
 
-            <div class="prescription-header__content">
-                @if ($clinicName)
-                    <h1 class="prescription-header__title">{{ $clinicName }}</h1>
-                @endif
+            @if ($clinicPhone2 || $clinicEmail || $clinicLogo)
+                <div class="prescription-header__details">
+                    @if ($clinicLogo)
+                        <div class="prescription-header__logo-wrap">
+                            <img src="{{ $clinicLogo }}" alt="Clinic Logo" class="prescription-header__logo">
+                        </div>
+                    @endif
 
-                @if ($clinicAddress)
-                    <p class="prescription-header__line">{{ $clinicAddress }}</p>
-                @endif
+                    @if ($clinicPhone2)
+                        <p class="prescription-header__line">M: {{ $clinicPhone2 }}</p>
+                    @endif
 
-                @if ($doctorName || $doctorRegistrationNumber)
-                    <p class="prescription-header__line">
-                        @if ($doctorName)
-                            <span>{{ $doctorName }}</span>
-                        @endif
-                        @if ($doctorRegistrationNumber)
-                            <span class="prescription-header__inline-item"><strong>R.N.:</strong> {{ $doctorRegistrationNumber }}</span>
-                        @endif
-                    </p>
-                @endif
-
-                @if ($clinicPhone1 || $clinicPhone2 || $clinicEmail)
-                    <p class="prescription-header__line">
-                        @if ($clinicPhone1)
-                            <span><strong>Phone:</strong> {{ $clinicPhone1 }}</span>
-                        @endif
-                        @if ($clinicPhone2)
-                            <span class="prescription-header__inline-item"><strong>Phone:</strong> {{ $clinicPhone2 }}</span>
-                        @endif
-                        @if ($clinicEmail)
-                            <span class="prescription-header__inline-item"><strong>Email:</strong> {{ $clinicEmail }}</span>
-                        @endif
-                    </p>
-                @endif
-            </div>
+                    @if ($clinicEmail)
+                        <p class="prescription-header__line">{{ $clinicEmail }}</p>
+                    @endif
+                </div>
+            @endif
         </div>
     @endif
 
@@ -145,17 +147,22 @@
         </tbody>
     </table>
 
-    <div class="footer">
-        <div class="follow-up">
-            <p class="gujarati-text">ફરી બતાવવાની તારીખ: {{ $history->NextAppointmentDate?->timezone(config('app.timezone'))->format('d/m/Y') }}</p>
-            @if (count($warningFields))
-                <div class="prescription-warnings">
-                    @foreach ($warningFields as $warningField)
-                        <p class="prescription-warning">* {{ $warningField }}</p>
-                    @endforeach
-                </div>
-            @endif
-        </div>
+    <p class="prescription-footer__follow-up prescription-footer__follow-up--inline">ફરી બતાવવાની તારીખ: {{ $history->NextAppointmentDate?->timezone(config('app.timezone'))->format('d/m/Y') }}</p>
+
+    <div class="prescription-footer">
+        <div class="prescription-footer__separator"></div>
+
+        @if (count($warningFields))
+            <div class="prescription-warnings">
+                @foreach ($warningFields as $warningField)
+                    <p class="prescription-warning">{{ $warningField }}</p>
+                @endforeach
+            </div>
+        @endif
+
+        @if ($clinicAddress)
+            <p class="prescription-footer__address">{{ $clinicAddress }}</p>
+        @endif
     </div>
 </div>
 
