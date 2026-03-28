@@ -18,6 +18,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class PatientsTable
@@ -50,10 +51,9 @@ class PatientsTable
                     ->description(fn($record) => $record->AgeGroup)
                     ->sortable(),
 
-                // 3. STACKED: Date of Birth with exact age below
-                TextColumn::make('BirthDate')
-                    ->label('Date of Birth')
-                    ->date('d/m/Y')
+                TextColumn::make('latest_diagnosis')
+                    ->label('Diagnosis')
+                    ->wrap()
                     ->sortable(),
 
                 // 4. STACKED: Phone with Address below
@@ -79,7 +79,7 @@ class PatientsTable
                     ->date('d/m/Y')
                     ->sortable(),
             ])
-            ->defaultSort('BirthDate', 'desc')->filters([
+            ->defaultSort('CreatedDate', 'desc')->filters([
                 Filter::make('visit_date_range')
                     ->label('Visit Dates')
                     ->form([
@@ -150,6 +150,21 @@ class PatientsTable
                         ->whereColumn('PatientId', 'patients.Id')
                         ->orderByDesc('CreatedDate')
                         ->limit(1),
+                    'latest_diagnosis' => DB::table('patienthistories as ph')
+                        ->selectRaw("GROUP_CONCAT(DISTINCT d.Name ORDER BY d.Name SEPARATOR ', ')")
+                        ->join('patienthistorydiseases as phd', 'phd.PatientHistoryId', '=', 'ph.Id')
+                        ->join('diseases as d', 'd.Id', '=', 'phd.DiseaseId')
+                        ->whereNull('ph.DeletedDate')
+                        ->whereRaw(
+                            "ph.Id = (
+                                select ph2.Id
+                                from patienthistories as ph2
+                                where ph2.PatientId = patients.Id
+                                  and ph2.DeletedDate is null
+                                order by ph2.CreatedDate desc
+                                limit 1
+                            )"
+                        ),
                 ])
                 ->withCount('patientHistories')
                 ->withCount([

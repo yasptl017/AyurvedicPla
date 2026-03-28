@@ -51,6 +51,9 @@ body {
 }
 
 .prescription-header__top-item--right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
     text-align: right;
 }
 
@@ -85,6 +88,16 @@ body {
     font-size: 18px;
     color: #b91c1c;
     font-weight: 700;
+}
+
+.prescription-header__timing {
+    margin: 4px 0 0;
+    font-size: 18px;
+    line-height: 1.25;
+    color: #b91c1c;
+    font-weight: 700;
+    white-space: normal;
+    word-break: break-word;
 }
 
 .prescription-header__details {
@@ -225,6 +238,10 @@ body {
     }
 
     .prescription-header__top-item--left {
+        align-items: center;
+    }
+
+    .prescription-header__top-item--right {
         align-items: center;
     }
 

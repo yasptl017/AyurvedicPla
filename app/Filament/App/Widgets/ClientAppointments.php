@@ -22,7 +22,7 @@ class ClientAppointments extends TableWidget
             ->query(
                 fn(): Builder => PatientHistory::query()
                     ->whereHas('clinic', fn($query) => $query->where('ClinicId', Filament::getTenant()->Id))
-                    ->with(['patient'])
+                    ->with(['patient', 'diseases'])
                     ->whereNotNull('NextAppointmentDate')
             )
             ->columns([
@@ -45,6 +45,15 @@ class ClientAppointments extends TableWidget
                 TextColumn::make('patient.Address')
                     ->label('Address')
                     ->searchable()
+                    ->wrap(),
+
+                TextColumn::make('diagnosis')
+                    ->label('Diagnosis')
+                    ->state(fn (PatientHistory $record) => $record->diseases
+                        ->pluck('Name')
+                        ->filter()
+                        ->unique()
+                        ->join(', '))
                     ->wrap(),
 
                 TextColumn::make('NextAppointmentDate')

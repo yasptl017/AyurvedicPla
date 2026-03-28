@@ -78,6 +78,9 @@ class ClinicProfile extends Page implements HasForms
                             ->required(),
                         TextInput::make('MobileNo2')
                             ->label('Mobile Number 2 (Optional)'),
+                        TextInput::make('ClinicTiming')
+                            ->label('Clinic Timing (Optional)')
+                            ->columnSpanFull(),
                         Textarea::make('WarningField1')
                             ->label('Warning Field 1 (Optional)')
                             ->rows(2)

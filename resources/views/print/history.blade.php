@@ -13,6 +13,7 @@
     $clinicEmail = filled($clinic?->Email) ? $clinic->Email : null;
     $clinicPhone1 = filled($clinic?->MobileNo) ? $clinic->MobileNo : null;
     $clinicPhone2 = filled($clinic?->MobileNo2) ? $clinic->MobileNo2 : null;
+    $clinicTiming = filled($clinic?->ClinicTiming) ? $clinic->ClinicTiming : null;
     $doctorName = filled($clinic?->DoctorName) ? $clinic->DoctorName : null;
     $doctorRegistrationNumber = filled($clinic?->RegistrationNo) ? $clinic->RegistrationNo : null;
     $warningFields = array_values(array_filter([
@@ -42,7 +43,7 @@
     $patientMobile = filled($patient->MobileNo) ? $patient->MobileNo : '-';
 @endphp
 <div class="prescription-container">
-    @if ($clinicName || $clinicAddress || $clinicEmail || $clinicPhone1 || $clinicPhone2 || $doctorName || $doctorRegistrationNumber)
+    @if ($clinicName || $clinicAddress || $clinicEmail || $clinicPhone1 || $clinicPhone2 || $clinicTiming || $doctorName || $doctorRegistrationNumber)
         <div class="prescription-header">
             <div class="prescription-header__top">
                 <div class="prescription-header__top-item prescription-header__top-item--left">
@@ -61,6 +62,10 @@
                 <div class="prescription-header__top-item prescription-header__top-item--right">
                     @if ($clinicPhone1)
                         <span class="prescription-header__mobile">M: {{ $clinicPhone1 }}</span>
+                    @endif
+
+                    @if ($clinicTiming)
+                        <p class="prescription-header__timing">{{ $clinicTiming }}</p>
                     @endif
                 </div>
             </div>
