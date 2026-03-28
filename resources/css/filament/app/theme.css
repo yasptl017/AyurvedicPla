@@ -9,14 +9,28 @@
 @source '../../../../resources/views/**/*';
 @source '../../../../vendor/guava/calendar/resources/**/*';
 
-.no-history-row,
-.no-history-row td {
+.waiting-new-row,
+.waiting-new-row .fi-ta-record-content-ctn,
+.waiting-new-row .fi-ta-record-content {
     background-color: rgb(254 249 195) !important;
 }
 
-:is(.dark .no-history-row),
-:is(.dark .no-history-row) td {
+:is(.dark .waiting-new-row),
+:is(.dark .waiting-new-row) .fi-ta-record-content-ctn,
+:is(.dark .waiting-new-row) .fi-ta-record-content {
     background-color: rgb(113 63 18 / 0.15) !important;
+}
+
+.waiting-return-row,
+.waiting-return-row .fi-ta-record-content-ctn,
+.waiting-return-row .fi-ta-record-content {
+    background-color: rgb(220 252 231) !important;
+}
+
+:is(.dark .waiting-return-row),
+:is(.dark .waiting-return-row) .fi-ta-record-content-ctn,
+:is(.dark .waiting-return-row) .fi-ta-record-content {
+    background-color: rgb(20 83 45 / 0.28) !important;
 }
 
 canvas[x-ref="canvas"] {

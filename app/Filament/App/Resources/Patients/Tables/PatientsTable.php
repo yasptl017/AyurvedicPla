@@ -173,7 +173,11 @@ class PatientsTable
                         ->whereDate('QueueDate', now()->timezone(config('app.timezone'))->toDateString()),
                 ])
                 ->orderByDesc('CreatedDate'))
-            ->recordClasses(fn ($record) => (($record->active_awaiting_count ?? 0) > 0 || $record->patient_histories_count === 0) ? 'no-history-row' : null)
+            ->recordClasses(fn ($record) => match (true) {
+                $record->patient_histories_count === 0 => 'waiting-new-row',
+                ($record->active_awaiting_count ?? 0) > 0 && $record->patient_histories_count > 0 => 'waiting-return-row',
+                default => null,
+            })
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),

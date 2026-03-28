@@ -26,7 +26,9 @@ class AwaitingPatient extends TableWidget
             ->query(fn (): Builder => AwaitingPatientEntry::query()
                 ->where('ClinicId', Filament::getTenant()?->Id)
                 ->whereDate('QueueDate', now()->timezone(config('app.timezone'))->toDateString())
-                ->with('patient')
+                ->with([
+                    'patient' => fn ($query) => $query->withCount('patientHistories'),
+                ])
                 ->latest('CreatedDate'))
             ->recordUrl(fn (AwaitingPatientEntry $record): string => PatientResource::getUrl('edit', ['record' => $record->PatientId]))
             ->columns([
@@ -147,6 +149,9 @@ class AwaitingPatient extends TableWidget
                             ->send();
                     }),
             ])
+            ->recordClasses(fn (AwaitingPatientEntry $record) => ($record->patient?->patient_histories_count ?? 0) === 0
+                ? 'waiting-new-row'
+                : 'waiting-return-row')
             ->toolbarActions([
                 BulkActionGroup::make([
                     //
