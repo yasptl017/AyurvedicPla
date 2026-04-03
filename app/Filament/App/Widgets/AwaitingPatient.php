@@ -7,7 +7,6 @@ use App\Models\AwaitingPatientEntry;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Facades\Filament;
-use Filament\Notifications\Notification;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget;
@@ -56,7 +55,7 @@ class AwaitingPatient extends TableWidget
                 TextColumn::make('patient.BirthDate')
                     ->label('Date of Birth')
                     ->date('d/m/Y')
-                    ->description(fn (AwaitingPatientEntry $record) => "{$record->patient?->AgeYear} yrs, {$record->patient?->AgeMonth} mos")
+                    ->description(fn (AwaitingPatientEntry $record) => "{$record->patient?->AgeYear}, {$record->patient?->AgeMonth}")
                     ->sortable(),
 
                 TextColumn::make('patient.Weight')
