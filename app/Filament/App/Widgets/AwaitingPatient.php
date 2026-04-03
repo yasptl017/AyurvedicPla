@@ -4,11 +4,9 @@ namespace App\Filament\App\Widgets;
 
 use App\Filament\App\Resources\Patients\PatientResource;
 use App\Models\AwaitingPatientEntry;
-use App\Models\Patient;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Facades\Filament;
-use Filament\Forms\Components\Select;
 use Filament\Notifications\Notification;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -76,63 +74,6 @@ class AwaitingPatient extends TableWidget
             ])
             ->filters([
                 //
-            ])
-            ->headerActions([
-                Action::make('addPatient')
-                    ->label('Add Patient')
-                    ->icon('heroicon-o-plus')
-                    ->schema([
-                        Select::make('PatientId')
-                            ->label('Patient')
-                            ->required()
-                            ->searchable()
-                            ->getSearchResultsUsing(function (string $search): array {
-                                return Patient::query()
-                                    ->where('ClinicId', Filament::getTenant()?->Id)
-                                    ->where(function (Builder $query) use ($search): void {
-                                        $query
-                                            ->where('FirstName', 'like', "%{$search}%")
-                                            ->orWhere('MiddleName', 'like', "%{$search}%")
-                                            ->orWhere('LastName', 'like', "%{$search}%")
-                                            ->orWhere('MobileNo', 'like', "%{$search}%");
-                                    })
-                                    ->orderBy('FirstName')
-                                    ->limit(50)
-                                    ->get()
-                                    ->mapWithKeys(fn (Patient $patient) => [
-                                        $patient->Id => trim(implode(' ', array_filter([
-                                            $patient->FirstName,
-                                            $patient->MiddleName,
-                                            $patient->LastName,
-                                        ]))) . ($patient->MobileNo ? " ({$patient->MobileNo})" : ''),
-                                    ])
-                                    ->all();
-                            })
-                            ->getOptionLabelUsing(function ($value): ?string {
-                                $patient = Patient::query()->find($value);
-
-                                if (! $patient) {
-                                    return null;
-                                }
-
-                                return trim(implode(' ', array_filter([
-                                    $patient->FirstName,
-                                    $patient->MiddleName,
-                                    $patient->LastName,
-                                ])));
-                            }),
-                    ])
-                    ->action(function (array $data): void {
-                        AwaitingPatientEntry::addForClinicAndPatient(
-                            clinicId: Filament::getTenant()?->Id,
-                            patientId: $data['PatientId'],
-                        );
-
-                        Notification::make()
-                            ->success()
-                            ->title('Patient added to today\'s waiting list')
-                            ->send();
-                    }),
             ])
             ->recordActions([
                 Action::make('remove')
