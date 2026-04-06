@@ -127,7 +127,7 @@ body {
     width: 100%;
     border-collapse: collapse;
     margin-bottom: 14px;
-    font-size: 12.5px;
+    font-size: 14.5px;
     table-layout: fixed;
 }
 
@@ -175,7 +175,7 @@ body {
     border: 1px solid #d5d5d5;
     padding: 6px 8px;
     text-align: left;
-    font-size: 12px;
+    font-size: 14px;
     line-height: 1.3;
 }
 

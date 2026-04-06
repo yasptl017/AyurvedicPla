@@ -10,9 +10,9 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreBulkAction;
+use Filament\Facades\Filament;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
-use Filament\Facades\Filament;
 use Filament\Notifications\Notification;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
@@ -35,7 +35,7 @@ class PatientsTable
                         $record->MiddleName,
                         $record->LastName,
                     ]))))
-                    ->description(fn($record) => $record->Email) // Stacks Email here
+                    ->description(fn ($record) => $record->Email) // Stacks Email here
                     ->searchable(['FirstName', 'LastName', 'MiddleName', 'Email'])
                     ->sortable('FirstName')
                     ->weight('bold'),
@@ -43,12 +43,12 @@ class PatientsTable
                 // 2. BADGE: Gender and Group (Visual flair)
                 TextColumn::make('Gender')
                     ->badge()
-                    ->color(fn(string $state): string => match ($state) {
+                    ->color(fn (string $state): string => match ($state) {
                         'Male' => 'info',
                         'Female' => 'danger', // or 'pink' if you have custom colors
                         default => 'gray',
                     })
-                    ->description(fn($record) => $record->AgeGroup)
+                    ->description(fn ($record) => $record->AgeGroup)
                     ->sortable(),
 
                 TextColumn::make('latest_diagnosis')
@@ -61,7 +61,7 @@ class PatientsTable
                     ->label('Contact')
                     ->icon('heroicon-m-phone')
                     ->copyable() // Nice UX feature to copy number
-                    ->description(fn($record) => Str::limit($record->Address, 30))
+                    ->description(fn ($record) => Str::limit($record->Address, 30))
                     ->searchable(['MobileNo', 'Address']),
 
                 TextColumn::make('first_visit_date')
@@ -156,15 +156,22 @@ class PatientsTable
                         ->join('diseases as d', 'd.Id', '=', 'phd.DiseaseId')
                         ->whereNull('ph.DeletedDate')
                         ->whereRaw(
-                            "ph.Id = (
+                            'ph.Id = (
                                 select ph2.Id
                                 from patienthistories as ph2
                                 where ph2.PatientId = patients.Id
                                   and ph2.DeletedDate is null
                                 order by ph2.CreatedDate desc
                                 limit 1
-                            )"
+                            )'
                         ),
+                    'awaiting_created_date' => AwaitingPatientEntry::query()
+                        ->select('CreatedDate')
+                        ->whereColumn('PatientId', 'patients.Id')
+                        ->where('ClinicId', Filament::getTenant()?->Id)
+                        ->whereDate('QueueDate', now()->timezone(config('app.timezone'))->toDateString())
+                        ->orderByDesc('CreatedDate')
+                        ->limit(1),
                 ])
                 ->withCount('patientHistories')
                 ->withCount([
@@ -172,6 +179,8 @@ class PatientsTable
                         ->where('ClinicId', Filament::getTenant()?->Id)
                         ->whereDate('QueueDate', now()->timezone(config('app.timezone'))->toDateString()),
                 ])
+                ->orderByRaw('CASE WHEN active_awaiting_count > 0 THEN 0 ELSE 1 END')
+                ->orderByDesc('awaiting_created_date')
                 ->orderByDesc('CreatedDate'))
             ->recordClasses(fn ($record) => match (true) {
                 $record->patient_histories_count === 0 => 'waiting-new-row',
@@ -209,9 +218,9 @@ class PatientsTable
     protected static function getVisitDateExpression(?string $field): ?string
     {
         return match ($field) {
-            'first_visit_date' => "select date(min(`CreatedDate`)) from `patienthistories` where `patienthistories`.`PatientId` = `patients`.`Id` and `patienthistories`.`DeletedDate` is null",
-            'last_visit_date' => "select date(max(`CreatedDate`)) from `patienthistories` where `patienthistories`.`PatientId` = `patients`.`Id` and `patienthistories`.`DeletedDate` is null",
-            'next_appointment_date' => "select date(`NextAppointmentDate`) from `patienthistories` where `patienthistories`.`PatientId` = `patients`.`Id` and `patienthistories`.`DeletedDate` is null order by `CreatedDate` desc limit 1",
+            'first_visit_date' => 'select date(min(`CreatedDate`)) from `patienthistories` where `patienthistories`.`PatientId` = `patients`.`Id` and `patienthistories`.`DeletedDate` is null',
+            'last_visit_date' => 'select date(max(`CreatedDate`)) from `patienthistories` where `patienthistories`.`PatientId` = `patients`.`Id` and `patienthistories`.`DeletedDate` is null',
+            'next_appointment_date' => 'select date(`NextAppointmentDate`) from `patienthistories` where `patienthistories`.`PatientId` = `patients`.`Id` and `patienthistories`.`DeletedDate` is null order by `CreatedDate` desc limit 1',
             default => null,
         };
     }

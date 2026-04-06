@@ -14,14 +14,14 @@ use Illuminate\Database\Eloquent\Builder;
 
 class ClientAppointments extends TableWidget
 {
-    protected int|string|array $columnSpan = "full";
+    protected int|string|array $columnSpan = 'full';
 
     public function table(Table $table): Table
     {
         return $table
             ->query(
-                fn(): Builder => PatientHistory::query()
-                    ->whereHas('clinic', fn($query) => $query->where('ClinicId', Filament::getTenant()->Id))
+                fn (): Builder => PatientHistory::query()
+                    ->whereHas('clinic', fn ($query) => $query->where('ClinicId', Filament::getTenant()->Id))
                     ->with(['patient', 'diseases'])
                     ->whereNotNull('NextAppointmentDate')
             )
@@ -66,12 +66,13 @@ class ClientAppointments extends TableWidget
                     ->label('Created At')
                     ->badge()
                     ->dateTime('d/m/Y h:i A', config('app.timezone'))
-                    ->sortable()
+                    ->sortable(),
             ])
             ->emptyStateHeading('No Appointments')
             ->filters([
                 SelectFilter::make('Range')
                     ->options([
+                        'today' => 'Today\'s Appointments',
                         'upcoming' => 'Upcoming Appointments',
                         'past' => 'Past Appointments',
                         'all' => 'All Appointments',
@@ -83,28 +84,29 @@ class ClientAppointments extends TableWidget
                         }
 
                         return match ($data['value']) {
+                            'today' => $query->where('NextAppointmentDate', '>=', now()->startOfDay())
+                                ->where('NextAppointmentDate', '<=', now()->endOfDay()),
                             'upcoming' => $query->where('NextAppointmentDate', '>=', now()),
                             'past' => $query->where('NextAppointmentDate', '<', now()),
                             default => $query,
                         };
-                    })
+                    }),
             ])
-            ->recordUrl(fn($record) => PatientResource::getUrl('edit', [
+            ->recordUrl(fn ($record) => PatientResource::getUrl('edit', [
                 'record' => $record->PatientId,
                 'tenant' => Filament::getTenant(),
-                'relation' => '0'
+                'relation' => '0',
             ]))
             ->recordActions([
                 Action::make('visitPatient')
                     ->label('View Patient')
                     ->icon('heroicon-o-eye')
-                    ->url(fn($record) => PatientResource::getUrl('edit', [
+                    ->url(fn ($record) => PatientResource::getUrl('edit', [
                         'record' => $record->PatientId,
                         'tenant' => Filament::getTenant(),
-                        'relation' => '0'
-                    ]))
+                        'relation' => '0',
+                    ])),
             ])
             ->defaultSort('NextAppointmentDate', 'asc');
     }
-
 }
