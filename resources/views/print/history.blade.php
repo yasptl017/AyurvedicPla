@@ -129,30 +129,63 @@
         </tbody>
     </table>
 
-    <table class="prescription-table">
-        <thead>
-        <tr>
-            <th>Medicine Name</th>
-            <th>Dose</th>
-            <th>Time of Administration</th>
-            <th>Quantity</th>
-            <th>Anupana</th>
-        </tr>
-        </thead>
-        <tbody>
-        @foreach ($history->prescriptions as $prescription)
+        <table class="prescription-table">
+            <thead>
             <tr>
-                <td><strong>{{ $prescription->medicine->Name }}</strong> ({{ $prescription->MedicineFormName }})</td>
-                <td>{{ $prescription->Dose }}</td>
-                <td>{{ $prescription->TimeOfAdministration }}</td>
-                <td>{{ $prescription->Duration }}</td>
-                <td>{{ $prescription->Anupana }}</td>
+                <th>S. No.</th>
+                <th>Medicine Name</th>
+                <th>Dose</th>
+                <th>Time of Administration</th>
+                <th>Quantity</th>
+                <th>Anupana</th>
             </tr>
-        @endforeach
-        </tbody>
-    </table>
+            </thead>
 
-    <p class="prescription-footer__follow-up prescription-footer__follow-up--inline">ફરી બતાવવાની તારીખ: {{ $history->NextAppointmentDate?->timezone(config('app.timezone'))->format('d/m/Y') }}</p>
+            @php
+                $prescriptions = $history->prescriptions;
+                $total = $prescriptions->count();
+            @endphp
+
+            @if ($total === 0)
+                <tbody class="no-break">
+                <tr class="follow-up-row">
+                    <td class="follow-up-cell" colspan="6">ફરી બતાવવાની તારીખ: {{ $history->NextAppointmentDate?->timezone(config('app.timezone'))->format('d/m/Y') }}</td>
+                </tr>
+                </tbody>
+            @else
+                <tbody>
+                @foreach ($prescriptions as $idx => $prescription)
+                    @if ($idx < $total - 1)
+                        <tr>
+                            <td>{{ $idx + 1 }}</td>
+                            <td><strong>{{ $prescription->medicine->Name }}</strong> ({{ $prescription->MedicineFormName }})</td>
+                            <td>{{ $prescription->Dose }}</td>
+                            <td>{{ $prescription->TimeOfAdministration }}</td>
+                            <td>{{ $prescription->Duration }}</td>
+                            <td>{{ $prescription->Anupana }}</td>
+                        </tr>
+                    @endif
+                @endforeach
+                </tbody>
+
+                {{-- Last medicine + follow-up grouped to avoid page-break between them --}}
+                <tbody class="no-break">
+                @php $last = $prescriptions->last(); @endphp
+                <tr>
+                    <td>{{ $total }}</td>
+                    <td><strong>{{ $last->medicine->Name }}</strong> ({{ $last->MedicineFormName }})</td>
+                    <td>{{ $last->Dose }}</td>
+                    <td>{{ $last->TimeOfAdministration }}</td>
+                    <td>{{ $last->Duration }}</td>
+                    <td>{{ $last->Anupana }}</td>
+                </tr>
+
+                <tr class="follow-up-row">
+                    <td class="follow-up-cell" colspan="6">ફરી બતાવવાની તારીખ: {{ $history->NextAppointmentDate?->timezone(config('app.timezone'))->format('d/m/Y') }}</td>
+                </tr>
+                </tbody>
+            @endif
+        </table>
 
     <div class="prescription-footer">
         <div class="prescription-footer__separator"></div>

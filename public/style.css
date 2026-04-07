@@ -313,4 +313,34 @@ body {
     .patient-details-cell--right {
         padding-left: 18px;
     }
+
+    /* Print table behavior: repeat headers, avoid breaking rows/tbody and style follow-up */
+    .prescription-table thead {
+        display: table-header-group;
+    }
+
+    .prescription-table tfoot {
+        display: table-footer-group;
+    }
+
+    .prescription-table tr {
+        page-break-inside: avoid;
+    }
+
+    .prescription-table th,
+    .prescription-table td {
+        font-size: 15px;
+    }
+
+    /* keep grouped rows (like last medicine + follow-up) together */
+    .no-break {
+        page-break-inside: avoid;
+    }
+
+    /* follow-up row styling inside the table */
+    .prescription-table .follow-up-cell {
+        color: #b91c1c;
+        font-weight: 700;
+    }
+
 }
