@@ -15,6 +15,11 @@ Route::get('/orders/{history}/print', function (PatientHistory $history) {
     return view('print.history', ['history' => $history, 'clinic' => $history->clinic, 'patient' => $history->patient]);
 })->name('order.print');
 
+Route::get('/orders/{history}/print-meds', function (PatientHistory $history) {
+    $history->load(['patient', 'prescriptions.medicine']);
+    return view('print.history-meds', ['history' => $history, 'patient' => $history->patient]);
+})->name('order.print-meds');
+
 $authorizePatientMedia = function (?Patient $patient, string $label): void {
     if (! $patient || ! $patient->clinic) {
         abort(404);

@@ -100,6 +100,13 @@ class Pharmarcy extends TableWidget
                     ->icon('heroicon-o-printer')
                     ->url(fn (PatientHistory $record): string => route('order.print', $record))
                     ->openUrlInNewTab(),
+                Action::make('printMeds')
+                    ->button()
+                    ->label('Print Meds')
+                    ->color('gray')
+                    ->icon('heroicon-o-printer')
+                    ->url(fn (PatientHistory $record): string => route('order.print-meds', $record))
+                    ->openUrlInNewTab(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

@@ -39,8 +39,66 @@
     $patientDate = $history->CreatedDate?->timezone(config('app.timezone'))->format('d/m/Y') ?? '-';
     $patientWeight = filled($patient->Weight) ? $patient->Weight . ' kg' : '-';
     $patientAddress = filled($patient->Address) ? $patient->Address : '-';
-    $patientAge = filled($patient->AgeYear) ? $patient->AgeYear . ' Years' : '-';
     $patientMobile = filled($patient->MobileNo) ? $patient->MobileNo : '-';
+    $patientAge = '-';
+    $patientBirthDateDisplay = null;
+    $patientAgeShort = null;
+
+    $ageReferenceDate = $history->CreatedDate
+        ? \Illuminate\Support\Carbon::parse($history->CreatedDate)
+        : now(config('app.timezone'));
+    $patientBirthDate = filled($patient->BirthDate)
+        ? \Illuminate\Support\Carbon::parse($patient->BirthDate)
+        : null;
+
+    if ($patientBirthDate) {
+        $patientBirthDateDisplay = $patientBirthDate->timezone(config('app.timezone'))->format('d/m/Y');
+    }
+
+    if ($patientBirthDate && $patientBirthDate->lte($ageReferenceDate)) {
+        $ageInterval = $patientBirthDate->diff($ageReferenceDate);
+        $ageYears = $ageInterval->y;
+        $ageMonths = $ageInterval->m;
+        $ageDays = $ageInterval->d;
+
+        if ($ageYears > 0) {
+            $patientAgeShort = $ageYears . ' Y';
+        } elseif ($ageMonths > 0) {
+            $patientAgeShort = $ageMonths . 'M';
+        } else {
+            $patientAgeShort = $ageDays . ' D';
+        }
+    } else {
+        $ageParts = [];
+
+        if (filled($patient->AgeYear)) {
+            $roundedAgeYear = (int) round((float) $patient->AgeYear);
+
+            if ($roundedAgeYear > 0) {
+                $ageParts[] = $roundedAgeYear . ' Y';
+            }
+        }
+
+        if (filled($patient->AgeMonth)) {
+            $roundedAgeMonth = (int) round((float) $patient->AgeMonth);
+
+            if ($roundedAgeMonth > 0) {
+                $ageParts[] = $roundedAgeMonth . 'M';
+            }
+        }
+
+        if (count($ageParts) > 0) {
+            $patientAgeShort = implode(' ', $ageParts);
+        }
+    }
+
+    if ($patientBirthDateDisplay && $patientAgeShort) {
+        $patientAge = $patientBirthDateDisplay . ' (' . $patientAgeShort . ')';
+    } elseif ($patientBirthDateDisplay) {
+        $patientAge = $patientBirthDateDisplay;
+    } elseif ($patientAgeShort) {
+        $patientAge = $patientAgeShort;
+    }
 @endphp
 <div class="prescription-container">
     @if ($clinicName || $clinicAddress || $clinicEmail || $clinicPhone1 || $clinicPhone2 || $clinicTiming || $doctorName || $doctorRegistrationNumber)
