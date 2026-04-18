@@ -29,19 +29,28 @@ class PatientForm
                 TextInput::make('FirstName')->required(),
                 TextInput::make('MiddleName'),
                 TextInput::make('LastName')->required(),
+                TextInput::make('Weight')
+                    ->numeric(),
+                TextInput::make('MobileNo'),
+                TextArea::make('Address')->columnSpan(2),
+                Select::make('consultation_fees_type')
+                    ->label('Consultation Fees')
+                    ->options([
+                        'Full' => 'Full',
+                        'Half' => 'Half',
+                        'Free' => 'Free',
+                    ])
+                    ->default('Full')
+                    ->required(),
                 DatePicker::make('BirthDate')
                     ->displayFormat('d/m/Y')
                     ->format('Y-m-d')
                     ->native(false),
-                TextInput::make('Weight')
-                    ->numeric(),
-                TextInput::make('MobileNo'),
                 TextInput::make('Email')->email(),
                 TextInput::make('OtherIdNumber'),
                 Radio::make('Gender')->options([
                     'male' => 'Male', 'female' => 'Female', 'others' => 'Others',
                 ])->columns(3),
-                TextArea::make('Address')->columnSpanFull(),
                 TakePicture::make('Image')
                     ->label('Patient Image')
                     ->disk('public')
@@ -55,16 +64,6 @@ class PatientForm
 
                 Textarea::make('history_of')
                     ->label('History of'),
-
-                Select::make('consultation_fees_type')
-                    ->label('Consultation Fees')
-                    ->options([
-                        'Full' => 'Full',
-                        'Half' => 'Half',
-                        'Free' => 'Free',
-                    ])
-                    ->default('Full')
-                    ->required(),
 
                 Section::make('Prakruti Analysis')
                     ->columnSpanFull()
