@@ -21,6 +21,7 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
 
 class PatientsTable
@@ -43,16 +44,31 @@ class PatientsTable
                     ->sortable('FirstName')
                     ->weight('bold'),
 
-                // 2. BADGE: Gender and Group (Visual flair)
-                TextColumn::make('Gender')
-                    ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'Male' => 'info',
-                        'Female' => 'danger', // or 'pink' if you have custom colors
-                        default => 'gray',
-                    })
-                    ->description(fn ($record) => $record->AgeGroup)
-                    ->sortable(),
+                TextColumn::make('latest_patient_history_id')
+                    ->label('Medicine')
+                    ->formatStateUsing(fn (?string $state) => $state ? 'View' : '-')
+                    ->color(fn (?string $state) => $state ? 'primary' : null)
+                    ->icon(fn (?string $state) => $state ? 'heroicon-o-eye' : null)
+                    ->action(
+                        Action::make('viewMedicine')
+                            ->visible(fn ($record) => (bool) $record->latest_patient_history_id)
+                            ->modalHeading('Prescription Details')
+                            ->modalContent(function ($record): HtmlString {
+                                $history = PatientHistory::query()->find($record->latest_patient_history_id);
+
+                                return new HtmlString(
+                                    view('order.view-modal', [
+                                        'history' => $history,
+                                        'patient' => $record,
+                                        'clinic' => $record->clinic,
+                                    ])->render()
+                                );
+                            })
+                            ->modalSubmitAction(false)
+                            ->modalCancelActionLabel('Close')
+                            ->slideOver()
+                            ->modalWidth('5xl')
+                    ),
 
                 TextColumn::make('latest_diagnosis')
                     ->label('Diagnosis')
@@ -188,6 +204,12 @@ class PatientsTable
                                 limit 1
                             )'
                         ),
+                    'latest_patient_history_id' => PatientHistory::query()
+                        ->select('Id')
+                        ->whereColumn('PatientId', 'patients.Id')
+                        ->whereNull('DeletedDate')
+                        ->orderByDesc('CreatedDate')
+                        ->limit(1),
                     'awaiting_created_date' => AwaitingPatientEntry::query()
                         ->select('CreatedDate')
                         ->whereColumn('PatientId', 'patients.Id')
