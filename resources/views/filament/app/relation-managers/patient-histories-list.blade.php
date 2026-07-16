@@ -80,6 +80,16 @@
                     >
                         Print Meds
                     </x-filament::button>
+
+                    <x-filament::button
+                        size="sm"
+                        color="gray"
+                        tag="a"
+                        :href="route('order.print-examinations', ['history' => $history->Id])"
+                        target="_blank"
+                    >
+                        PDF
+                    </x-filament::button>
                 </div>
             </x-slot>
 

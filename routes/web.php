@@ -12,13 +12,21 @@ use Illuminate\Support\Str;
 
 Route::get('/orders/{history}/print', function (PatientHistory $history) {
     $history->load(['patient', 'prescriptions.medicine', 'diseases', 'clinic']);
+
     return view('print.history', ['history' => $history, 'clinic' => $history->clinic, 'patient' => $history->patient]);
 })->name('order.print');
 
 Route::get('/orders/{history}/print-meds', function (PatientHistory $history) {
     $history->load(['patient', 'prescriptions.medicine']);
+
     return view('print.history-meds', ['history' => $history, 'patient' => $history->patient]);
 })->name('order.print-meds');
+
+Route::get('/orders/{history}/print-examinations', function (PatientHistory $history) {
+    $history->load(['patient', 'rogaPariksa', 'hetuPariksa', 'astavidhyaPariksha']);
+
+    return view('print.history-examinations', ['history' => $history, 'patient' => $history->patient]);
+})->name('order.print-examinations');
 
 $authorizePatientMedia = function (?Patient $patient, string $label): void {
     if (! $patient || ! $patient->clinic) {

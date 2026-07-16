@@ -26,6 +26,7 @@ class EditPatientHistory extends EditRecord
     {
         return [
             $this->getHeaderSaveAction(),
+            $this->getPrintExaminationsAction('printExaminationsHeader'),
             $this->getPrintAction('printHeader'),
             $this->getPrintMedsAction('printMedsHeader'),
             DeleteAction::make(),
@@ -38,6 +39,7 @@ class EditPatientHistory extends EditRecord
     {
         return [
             $this->getSaveFormAction(),
+            $this->getPrintExaminationsAction('printExaminationsForm'),
             $this->getPrintAction('printForm'),
             $this->getPrintMedsAction('printMedsForm'),
             $this->getCancelFormAction(),
@@ -69,6 +71,16 @@ class EditPatientHistory extends EditRecord
             ->color('gray')
             ->icon(Heroicon::Printer)
             ->url(fn (PatientHistory $record): string => route('order.print-meds', $record))
+            ->openUrlInNewTab();
+    }
+
+    protected function getPrintExaminationsAction(string $name): Action
+    {
+        return Action::make($name)
+            ->label('PDF')
+            ->color('gray')
+            ->icon(Heroicon::DocumentText)
+            ->url(fn (PatientHistory $record): string => route('order.print-examinations', $record))
             ->openUrlInNewTab();
     }
 
