@@ -2,7 +2,12 @@
   "permissions": {
     "allow": [
       "Bash(php artisan make:migration:*)",
-      "Bash(dir \"f:\\\\Laravel\\\\New\\\\arya\\\\app\\\\Filament\\\\App\\\\Resources\\\\Patients\\\\Resources\\\\PatientHistories\")"
+      "Bash(dir \"f:\\\\Laravel\\\\New\\\\arya\\\\app\\\\Filament\\\\App\\\\Resources\\\\Patients\\\\Resources\\\\PatientHistories\")",
+      "Bash(vendor/bin/pint --dirty)",
+      "WebFetch(domain:filamentphp.com)",
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:laracasts.com)"
     ]
   }
 }

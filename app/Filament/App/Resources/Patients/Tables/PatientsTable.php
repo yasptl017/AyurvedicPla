@@ -3,6 +3,7 @@
 namespace App\Filament\App\Resources\Patients\Tables;
 
 use App\Models\AwaitingPatientEntry;
+use App\Models\Disease;
 use App\Models\PatientHistory;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
@@ -16,6 +17,7 @@ use Filament\Forms\Components\Select;
 use Filament\Notifications\Notification;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
@@ -61,8 +63,9 @@ class PatientsTable
                 TextColumn::make('MobileNo')
                     ->label('Contact')
                     ->icon('heroicon-m-phone')
-                    ->copyable() // Nice UX feature to copy number
-                    ->description(fn ($record) => Str::limit($record->Address, 30))
+                    ->formatStateUsing(fn (?string $state) => $state ?: '—')
+                    ->copyable(fn ($record) => filled($record->MobileNo)) // Nice UX feature to copy number
+                    ->description(fn ($record) => $record->Address ? Str::limit($record->Address, 30) : null)
                     ->searchable(['MobileNo', 'Address']),
 
                 TextColumn::make('first_visit_date')
@@ -117,6 +120,25 @@ class PatientsTable
                         }
 
                         return $indicators;
+                    }),
+
+                SelectFilter::make('disease')
+                    ->label('Disease')
+                    ->options(fn (): array => Disease::query()->orderBy('Name')->pluck('Name', 'Id')->all())
+                    ->searchable()
+                    ->multiple()
+                    ->query(function (Builder $query, array $data): Builder {
+                        if (empty($data['values'])) {
+                            return $query;
+                        }
+
+                        return $query->whereHas(
+                            'patientHistories',
+                            fn (Builder $historyQuery) => $historyQuery->whereHas(
+                                'diseases',
+                                fn (Builder $diseaseQuery) => $diseaseQuery->whereIn('diseases.Id', $data['values'])
+                            )
+                        );
                     }),
             ])
             ->recordActions([
