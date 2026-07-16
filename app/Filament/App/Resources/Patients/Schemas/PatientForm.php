@@ -7,6 +7,7 @@ use App\Models\Patient;
 use emmanpbarrameda\FilamentTakePictureField\Forms\Components\TakePicture;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -14,6 +15,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Fieldset;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Filament\Support\Enums\Width;
@@ -69,6 +71,14 @@ class PatientForm
                     ->columnSpanFull()
                     ->relationship('prakruti')
                     ->headerActions([
+                        Action::make('printPrakruti')
+                            ->label('PDF')
+                            ->icon('heroicon-o-document-text')
+                            ->color('gray')
+                            ->visible(fn (mixed $livewire): bool => (bool) static::resolveOwnerPatientId($livewire))
+                            ->url(fn (mixed $livewire): string => route('patient.print-prakruti', static::resolveOwnerPatientId($livewire)))
+                            ->openUrlInNewTab(),
+
                         // THE MODAL ACTION
                         Action::make('openCalculator')
                             ->label('Run Calculator')
@@ -76,11 +86,13 @@ class PatientForm
                             ->modalHeading('Prakruti Assessment')
                             ->modalWidth(Width::MaxContent) // Wide modal for the radio buttons
                             ->form(static::getPrakrutiCalculationSchema()) // The Radio buttons
+                            ->fillForm(fn (Get $get): array => $get('prakruti.Responses') ?? [])
                             ->action(function (array $data, Set $set) {
                                 static::calculateAndSetResults($data, $set);
                             }),
                     ])
                     ->schema([
+                        Hidden::make('Responses'),
                         Grid::make(7)
                             ->schema([
                                 TextInput::make('VatCount')->label('Vata Count')->readOnly()->default(0),
@@ -135,6 +147,22 @@ class PatientForm
         return route('patient.images.view', ['record' => $record]);
     }
 
+    /**
+     * Resolves the Patient being edited from the owning Livewire page, regardless
+     * of which relationship-scoped Section the calling Action lives in (Filament
+     * injects the related model, e.g. PatientPrakruti, as $record in that context).
+     */
+    protected static function resolveOwnerPatientId(mixed $livewire): ?string
+    {
+        if (! method_exists($livewire, 'getRecord')) {
+            return null;
+        }
+
+        $record = $livewire->getRecord();
+
+        return $record instanceof Patient && $record->exists ? $record->Id : null;
+    }
+
     public static function getPrakrutiCalculationSchema(): array
     {
         $fieldsets = MainPrakrutiBodyPartOrFood::query()
@@ -172,29 +200,31 @@ class PatientForm
      */
     protected static function calculateAndSetResults(array $data, Set $set): void
     {
+        // Persist the raw selections so the calculator can be re-opened with
+        // previous answers pre-filled, and so the PDF can show ticked options.
+        $set('prakruti.Responses', $data);
+
         // 1. Get selected option IDs from modal data
         $selectedIds = array_filter(array_values($data));
 
-        if (empty($selectedIds)) {
-            return;
-        }
-
-        // 2. Query Doshas
-        $prakrutiMap = MainPrakrutiBodyPartOrFood::query()
-            ->whereIn('Id', $selectedIds)
-            ->with('mainPrakruti')
-            ->get();
-
         $counts = ['Vata' => 0, 'Pitta' => 0, 'Kapha' => 0];
 
-        foreach ($prakrutiMap as $item) {
-            $name = $item->mainPrakruti->Name ?? '';
-            if (stripos($name, 'VAT') !== false) {
-                $counts['Vata']++;
-            } elseif (stripos($name, 'PIT') !== false) {
-                $counts['Pitta']++;
-            } elseif (stripos($name, 'KAF') !== false || stripos($name, 'Kapha') !== false) {
-                $counts['Kapha']++;
+        if (! empty($selectedIds)) {
+            // 2. Query Doshas
+            $prakrutiMap = MainPrakrutiBodyPartOrFood::query()
+                ->whereIn('Id', $selectedIds)
+                ->with('mainPrakruti')
+                ->get();
+
+            foreach ($prakrutiMap as $item) {
+                $name = $item->mainPrakruti->Name ?? '';
+                if (stripos($name, 'VAT') !== false) {
+                    $counts['Vata']++;
+                } elseif (stripos($name, 'PIT') !== false) {
+                    $counts['Pitta']++;
+                } elseif (stripos($name, 'KAF') !== false || stripos($name, 'Kapha') !== false) {
+                    $counts['Kapha']++;
+                }
             }
         }
 
@@ -207,11 +237,8 @@ class PatientForm
         $set('prakruti.PitCount', $counts['Pitta']);
         $set('prakruti.KufCount', $counts['Kapha']);
         $set('prakruti.Total', $total);
-
-        if ($total > 0) {
-            $set('prakruti.VatPercentage', (int) round(($counts['Vata'] / $total) * 100));
-            $set('prakruti.PitPercentage', (int) round(($counts['Pitta'] / $total) * 100));
-            $set('prakruti.KufPercentage', (int) round(($counts['Kapha'] / $total) * 100));
-        }
+        $set('prakruti.VatPercentage', $total > 0 ? (int) round(($counts['Vata'] / $total) * 100) : 0);
+        $set('prakruti.PitPercentage', $total > 0 ? (int) round(($counts['Pitta'] / $total) * 100) : 0);
+        $set('prakruti.KufPercentage', $total > 0 ? (int) round(($counts['Kapha'] / $total) * 100) : 0);
     }
 }

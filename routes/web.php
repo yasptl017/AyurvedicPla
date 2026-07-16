@@ -28,6 +28,27 @@ Route::get('/orders/{history}/print-examinations', function (PatientHistory $his
     return view('print.history-examinations', ['history' => $history, 'patient' => $history->patient]);
 })->name('order.print-examinations');
 
+Route::get('/patients/{patient}/print-prakruti', function (Patient $patient) {
+    $patient->load('prakruti');
+
+    $fieldsets = \App\Models\MainPrakrutiBodyPartOrFood::query()
+        ->with(['bodyPartOrFood', 'mainPrakruti'])
+        ->get()
+        ->groupBy('bodyPartOrFood.Name')
+        ->map(fn ($items) => $items->map(fn ($item) => [
+            'id' => (string) $item->Id,
+            'dosha' => $item->mainPrakruti->Name ?? '-',
+            'symptoms' => $item->Symptoms,
+        ]));
+
+    return view('print.patient-prakruti', [
+        'patient' => $patient,
+        'prakruti' => $patient->prakruti,
+        'fieldsets' => $fieldsets,
+        'responses' => $patient->prakruti?->Responses ?? [],
+    ]);
+})->name('patient.print-prakruti');
+
 $authorizePatientMedia = function (?Patient $patient, string $label): void {
     if (! $patient || ! $patient->clinic) {
         abort(404);

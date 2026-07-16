@@ -13,15 +13,16 @@ class PatientPrakruti extends Model
 
     protected $table = 'patientprakrutis';
 
-    public function patient(): belongsto
+    public function patient(): BelongsTo
     {
-        return $this->belongsto(patient::class, 'patientid');
+        return $this->belongsTo(Patient::class, 'PatientId');
     }
 
     protected function casts(): array
     {
         return [
-            'isdeleted' => 'boolean',
+            'IsDeleted' => 'boolean',
+            'Responses' => 'array',
         ];
     }
 }
