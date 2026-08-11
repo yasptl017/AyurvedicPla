@@ -1,13 +1,12 @@
 <IfModule mod_rewrite.c>
     RewriteEngine On
+    RewriteBase /
 
-    # If the request is already for the public folder, do not rewrite again.
-    RewriteCond %{REQUEST_URI} !^/public/
+    # Do not rewrite direct public folder requests.
+    RewriteRule ^public/ - [L,NC]
 
-    # If the requested filename exists in the repo root, serve it directly.
+    # Route all other requests into the Laravel public folder.
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
-
-    # Send all other requests into the Laravel public folder.
-    RewriteRule ^ public/$1 [L]
+    RewriteRule ^(.*)$ public/$1 [L,NC]
 </IfModule>
