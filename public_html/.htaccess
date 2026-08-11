@@ -1,0 +1,10 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+
+    # If the request is already for the sibling public folder, do not rewrite again.
+    RewriteCond %{REQUEST_URI} !^/public/
+
+    # Route every request into the actual Laravel public folder.
+    RewriteRule ^(.*)$ ../public/$1 [L]
+</IfModule>
