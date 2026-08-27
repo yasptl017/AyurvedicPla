@@ -30,8 +30,8 @@ class AppServiceProvider extends ServiceProvider
         // Ensure the page alias exists even if production discovery/cache is stale.
         Livewire::component('app.filament.app.pages.clinic-profile', ClinicProfile::class);
 
-        if ($this->app->environment() === 'production') {
-            Url::forceScheme('https');
+        if (str_starts_with((string) config('app.url'), 'https://')) {
+            URL::forceScheme('https');
         }
     }
 }
