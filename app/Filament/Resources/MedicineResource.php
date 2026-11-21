@@ -60,7 +60,7 @@ class MedicineResource extends Resource
         return $schema->components([
             Select::make('DiseaseId')
                 ->label('Disease')
-                ->options(fn () => Disease::query()->pluck('Name', 'Id'))
+                ->options(fn () => Disease::query()->pluck('Name', 'Id')->filter())
                 ->searchable()
                 ->preload()
                 ->live()
@@ -78,7 +78,7 @@ class MedicineResource extends Resource
 
                     return DiseaseType::query()
                         ->where('DiseaseId', $diseaseId)
-                        ->pluck('Name', 'Id');
+                        ->pluck('Name', 'Id')->filter();
                 })
                 ->searchable()
                 ->preload()
@@ -97,7 +97,7 @@ class MedicineResource extends Resource
 
             Select::make('MedicineId')
                 ->label('Medicine')
-                ->options(fn () => Medicine::query()->pluck('Name', 'Id'))
+                ->options(fn () => Medicine::query()->pluck('Name', 'Id')->filter())
                 ->searchable()
                 ->preload()
                 ->required(fn (Get $get) => $get('medicine_mode') !== 'new')
@@ -126,7 +126,7 @@ class MedicineResource extends Resource
 
             Select::make('new_medicine_form_id')
                 ->label('Medicine Form')
-                ->options(fn () => MedicineForm::query()->pluck('Name', 'Id'))
+                ->options(fn () => MedicineForm::query()->pluck('Name', 'Id')->filter())
                 ->searchable()
                 ->preload()
                 ->visible(fn (Get $get) => $get('medicine_mode') === 'new')
@@ -138,7 +138,7 @@ class MedicineResource extends Resource
 
             Select::make('MedicineFormId')
                 ->label('Medicine Form')
-                ->options(fn () => MedicineForm::query()->pluck('Name', 'Id'))
+                ->options(fn () => MedicineForm::query()->pluck('Name', 'Id')->filter())
                 ->searchable()
                 ->preload()
                 ->required(fn (Get $get) => $get('medicine_mode') !== 'new')
@@ -149,7 +149,7 @@ class MedicineResource extends Resource
 
             Select::make('TimeOfAdministrationId')
                 ->label('Time Of Administration')
-                ->options(fn () => TimeOfAdministration::query()->orderBy('NameGujarati')->pluck('NameGujarati', 'Id'))
+                ->options(fn () => TimeOfAdministration::query()->orderBy('NameGujarati')->pluck('NameGujarati', 'Id')->filter())
                 ->searchable()
                 ->preload()
                 ->required(),
@@ -160,7 +160,10 @@ class MedicineResource extends Resource
 
             Select::make('AnupanaId')
                 ->label('Anupana')
-                ->options(fn () => Anupana::query()->pluck('Name', 'Id'))
+                ->options(fn () => Anupana::query()
+                    ->get(['Id', 'Name', 'NameGujarati'])
+                    ->mapWithKeys(fn (Anupana $anupana): array => [$anupana->Id => $anupana->Name ?: $anupana->NameGujarati])
+                    ->filter())
                 ->searchable()
                 ->preload()
                 ->required(),

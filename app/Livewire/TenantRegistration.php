@@ -21,21 +21,20 @@ class TenantRegistration extends RegisterTenant
 
     public static function getLabel(): string
     {
-        return "Register Clinic";
+        return 'Register Clinic';
     }
-
 
     public function form(Schema $schema): Schema
     {
         return $schema
             ->components([
                 TextInput::make('ClinicName')->label('Name')->required()->live(onBlur: true)
-                    ->afterStateUpdated(fn(Set $set, ?string $state) => $set('ClinicUrl', Str::slug($state))),
-                TextInput::make("Email")->email()->required(),
-                TextInput::make("MobileNo")->required(),
-                TextInput::make("ClinicUrl")->required()->label("Subdomain"),
+                    ->afterStateUpdated(fn (Set $set, ?string $state) => $set('ClinicUrl', Str::slug($state))),
+                TextInput::make('Email')->email()->required(),
+                TextInput::make('MobileNo')->required(),
+                TextInput::make('ClinicUrl')->required()->label('Subdomain'),
                 Select::make('StateId')->label('State')
-                    ->options(State::all()->pluck('Name', 'Id'))
+                    ->options(State::all()->pluck('Name', 'Id')->filter())
                     ->live()
                     ->dehydrated(false)
                     ->afterStateUpdated(function (Set $set) {
@@ -44,14 +43,14 @@ class TenantRegistration extends RegisterTenant
 
                 Select::make('CityId')
                     ->label('city')
-                    ->options(fn(Get $get): array => City::query()
+                    ->options(fn (Get $get): array => City::query()
                         ->where('cities.StateId', $get('StateId'))
-                        ->pluck('Name', 'Id')
+                        ->pluck('Name', 'Id')->filter()
                         ->toArray()
                     )
-                    ->disabled(fn(Get $get): bool => !filled($get('StateId')))
+                    ->disabled(fn (Get $get): bool => ! filled($get('StateId')))
                     ->live(),
-                Textarea::make("Address")->columnSpanFull()
+                Textarea::make('Address')->columnSpanFull(),
                 // ...
             ])->columns();
     }
@@ -61,7 +60,7 @@ class TenantRegistration extends RegisterTenant
         $team = Clinic::query()->create($data);
 
         $team->users()->attach(auth()->user()->Id, [
-            'role' => 'owner'
+            'role' => 'owner',
         ]);
 
         return $team;

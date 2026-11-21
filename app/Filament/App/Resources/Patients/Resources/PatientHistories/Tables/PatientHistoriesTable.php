@@ -57,7 +57,7 @@ class PatientHistoriesTable
             ->filters([
                 SelectFilter::make('disease')
                     ->label('Disease')
-                    ->options(fn () => Disease::query()->orderBy('Name')->pluck('Name', 'Id'))
+                    ->options(fn () => Disease::query()->orderBy('Name')->pluck('Name', 'Id')->filter())
                     ->searchable()
                     ->query(fn (Builder $query, array $data) => $query->when(
                         $data['value'],
@@ -66,7 +66,7 @@ class PatientHistoriesTable
 
                 SelectFilter::make('medicine')
                     ->label('Medicine')
-                    ->options(fn () => Medicine::query()->orderBy('Name')->pluck('Name', 'Id'))
+                    ->options(fn () => Medicine::query()->orderBy('Name')->pluck('Name', 'Id')->filter())
                     ->searchable()
                     ->query(fn (Builder $query, array $data) => $query->when(
                         $data['value'],

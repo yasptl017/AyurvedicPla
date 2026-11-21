@@ -34,7 +34,7 @@ class SymptomsRelationManager extends RelationManager
                     ->icon(Heroicon::OutlinedPaperClip)
                     ->form([
                         CheckboxList::make('symptoms')
-                            ->options(fn () => Symptom::query()->pluck('Name', 'Id')->toArray())
+                            ->options(fn () => Symptom::query()->pluck('Name', 'Id')->filter()->toArray())
                             ->default(fn () => $this->getOwnerRecord()->symptoms()->pluck('symptoms.Id')->toArray())
                             ->searchable()
                             ->bulkToggleable()

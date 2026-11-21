@@ -56,9 +56,9 @@ class PatientHistoryForm
                         ->badge(fn (?PatientHistory $record) => $record?->prescriptions()->exists() ? '●' : null)
                         ->badgeColor('danger')
                         ->schema(function (?PatientHistory $record) {
-                            $globalAnupanas = Anupana::query()->whereNotNull('NameGujarati')->pluck('NameGujarati', 'Id');
-                            $globalTimeOfAdministrations = TimeOfAdministration::query()->whereNotNull('NameGujarati')->pluck('NameGujarati', 'Id');
-                            $globalMedicineForms = MedicineForm::query()->pluck('Name', 'Id');
+                            $globalAnupanas = Anupana::query()->whereNotNull('NameGujarati')->pluck('NameGujarati', 'Id')->filter();
+                            $globalTimeOfAdministrations = TimeOfAdministration::query()->whereNotNull('NameGujarati')->pluck('NameGujarati', 'Id')->filter();
+                            $globalMedicineForms = MedicineForm::query()->pluck('Name', 'Id')->filter();
 
                             return [
                                 Grid::make(2)
@@ -235,7 +235,7 @@ class PatientHistoryForm
                                                                 Select::make('MedicineId')
                                                                     ->label('Existing Medicine')
                                                                     ->searchable()
-                                                                    ->options(fn () => Medicine::query()->pluck('Name', 'Id'))
+                                                                    ->options(fn () => Medicine::query()->pluck('Name', 'Id')->filter())
                                                                     ->visible(fn (Get $get) => $get('medicine_mode') !== 'new')
                                                                     ->required(fn (Get $get) => $get('medicine_mode') !== 'new'),
                                                                 TextInput::make('new_medicine_name')
@@ -244,7 +244,7 @@ class PatientHistoryForm
                                                                     ->required(fn (Get $get) => $get('medicine_mode') === 'new'),
                                                                 Select::make('new_medicine_form_id')
                                                                     ->label('Medicine Form')
-                                                                    ->options(fn () => MedicineForm::query()->pluck('Name', 'Id'))
+                                                                    ->options(fn () => MedicineForm::query()->pluck('Name', 'Id')->filter())
                                                                     ->searchable()
                                                                     ->visible(fn (Get $get) => $get('medicine_mode') === 'new')
                                                                     ->required(fn (Get $get) => $get('medicine_mode') === 'new'),
@@ -485,7 +485,7 @@ class PatientHistoryForm
                                     ->dehydrated(false)
                                     ->searchable()
                                     ->preload()
-                                    ->options(Medicine::query()->pluck('Name', 'Id'))
+                                    ->options(Medicine::query()->pluck('Name', 'Id')->filter())
                                     ->live()
                                     ->visible(fn (Get $get) => $get('other_medicine_mode') !== 'new')
                                     ->afterStateUpdated(function ($state, Get $get, Set $set) use ($globalTimeOfAdministrations, $globalAnupanas) {
@@ -535,7 +535,7 @@ class PatientHistoryForm
 
                                 Select::make('other_new_medicine_form_id')
                                     ->label('Medicine Form')
-                                    ->options(fn () => MedicineForm::query()->pluck('Name', 'Id'))
+                                    ->options(fn () => MedicineForm::query()->pluck('Name', 'Id')->filter())
                                     ->searchable()
                                     ->preload()
                                     ->dehydrated(false)

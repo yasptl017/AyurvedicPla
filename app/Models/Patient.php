@@ -15,11 +15,17 @@ class Patient extends Model
 
     protected $table = 'patients';
 
+    protected static function booted(): void
+    {
+        static::deleted(function (self $patient): void {
+            $patient->awaitingEntries()->get()->each->delete();
+        });
+    }
+
     public function clinic(): BelongsTo
     {
         return $this->belongsTo(Clinic::class, 'ClinicId');
     }
-
 
     public function custom_tab_data()
     {

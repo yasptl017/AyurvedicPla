@@ -334,7 +334,7 @@ class MedicinesRelationManager extends RelationManager
 
         return $this->medicineOptions = Medicine::query()
             ->orderBy('Name')
-            ->pluck('Name', 'Id')
+            ->pluck('Name', 'Id')->filter()
             ->toArray();
     }
 
@@ -346,7 +346,7 @@ class MedicinesRelationManager extends RelationManager
 
         return $this->timeOptions = TimeOfAdministration::query()
             ->orderBy('NameGujarati')
-            ->pluck('NameGujarati', 'Id')
+            ->pluck('NameGujarati', 'Id')->filter()
             ->toArray();
     }
 
@@ -358,7 +358,9 @@ class MedicinesRelationManager extends RelationManager
 
         return $this->anupanaOptions = Anupana::query()
             ->orderBy('Name')
-            ->pluck('Name', 'Id')
+            ->get(['Id', 'Name', 'NameGujarati'])
+            ->mapWithKeys(fn (Anupana $anupana): array => [$anupana->Id => $anupana->Name ?: $anupana->NameGujarati])
+            ->filter()
             ->toArray();
     }
 
@@ -370,7 +372,7 @@ class MedicinesRelationManager extends RelationManager
 
         return $this->medicineFormOptions = MedicineForm::query()
             ->orderBy('Name')
-            ->pluck('Name', 'Id')
+            ->pluck('Name', 'Id')->filter()
             ->toArray();
     }
 

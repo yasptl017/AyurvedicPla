@@ -39,7 +39,14 @@ class AwaitingPatient extends TableWidget
                         $record->patient?->LastName,
                     ]))))
                     ->description(fn (AwaitingPatientEntry $record) => $record->patient?->Email)
-                    ->searchable(['patient.FirstName', 'patient.LastName', 'patient.MiddleName', 'patient.Email'])
+                    ->searchable(query: fn (Builder $query, string $search): Builder => $query->whereHas(
+                        'patient',
+                        fn (Builder $patientQuery) => $patientQuery->where(fn (Builder $nameQuery) => $nameQuery
+                            ->where('FirstName', 'like', "%{$search}%")
+                            ->orWhere('MiddleName', 'like', "%{$search}%")
+                            ->orWhere('LastName', 'like', "%{$search}%")
+                            ->orWhere('Email', 'like', "%{$search}%"))
+                    ))
                     ->sortable('PatientId')
                     ->weight('bold'),
 
@@ -69,7 +76,12 @@ class AwaitingPatient extends TableWidget
                     ->icon('heroicon-m-phone')
                     ->copyable()
                     ->description(fn (AwaitingPatientEntry $record) => Str::limit($record->patient?->Address, 30))
-                    ->searchable(['patient.MobileNo', 'patient.Address']),
+                    ->searchable(query: fn (Builder $query, string $search): Builder => $query->whereHas(
+                        'patient',
+                        fn (Builder $patientQuery) => $patientQuery->where(fn (Builder $contactQuery) => $contactQuery
+                            ->where('MobileNo', 'like', "%{$search}%")
+                            ->orWhere('Address', 'like', "%{$search}%"))
+                    )),
 
             ])
             ->filters([

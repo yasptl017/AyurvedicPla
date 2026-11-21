@@ -7,6 +7,7 @@ use App\Models\Disease;
 use App\Models\PatientHistory;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ForceDeleteBulkAction;
@@ -140,7 +141,7 @@ class PatientsTable
 
                 SelectFilter::make('disease')
                     ->label('Disease')
-                    ->options(fn (): array => Disease::query()->orderBy('Name')->pluck('Name', 'Id')->all())
+                    ->options(fn (): array => Disease::query()->orderBy('Name')->pluck('Name', 'Id')->filter()->all())
                     ->searchable()
                     ->multiple()
                     ->query(function (Builder $query, array $data): Builder {
@@ -175,6 +176,11 @@ class PatientsTable
                             ->send();
                     }),
                 EditAction::make(),
+                DeleteAction::make()
+                    ->label('Remove')
+                    ->modalHeading('Remove patient')
+                    ->modalDescription('This removes the patient from the patient list and from today\'s waiting list.')
+                    ->successNotificationTitle('Patient removed'),
             ])
             ->modifyQueryUsing(fn (Builder $query) => $query
                 ->addSelect([
