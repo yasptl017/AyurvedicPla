@@ -3,6 +3,7 @@
 namespace App\Filament\App\Pages;
 
 use App\Filament\App\Widgets\Calendar;
+use App\Filament\App\Widgets\MonthlyPatientsChart;
 use App\Filament\App\Widgets\StatsOverview;
 use Filament\Pages\Dashboard as BaseDashboard;
 
@@ -14,6 +15,7 @@ class Dashboard extends BaseDashboard
     {
         return [
             StatsOverview::class,
+            MonthlyPatientsChart::class,
             Calendar::class,
         ];
     }
