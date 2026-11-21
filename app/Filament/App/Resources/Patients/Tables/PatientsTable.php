@@ -29,7 +29,7 @@ class PatientsTable
     public static function configure(Table $table): Table
     {
         return $table
-            ->poll('5s')
+            ->poll('30s')
             ->columns([
                 // 1. STACKED: Full Name with Email below it
                 TextColumn::make('FirstName')
