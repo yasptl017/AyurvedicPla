@@ -85,7 +85,7 @@
         }
     </style>
 </head>
-<body onload="window.print()">
+<body>
 @php
     $patientName = trim(implode(' ', array_filter([
         $patient->FirstName,
@@ -192,10 +192,6 @@
     </div>
 </div>
 
-<script>
-    window.addEventListener('afterprint', () => {
-        setTimeout(() => { window.close(); }, 100);
-    });
-</script>
+@include('print.partials.print-button')
 </body>
 </html>

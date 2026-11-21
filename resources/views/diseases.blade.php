@@ -59,10 +59,9 @@
                                     onclick="
                                         var content = document.getElementById('disease-content-{{ $disease->Id }}-{{ $loop->index }}').innerHTML;
                                         var w = window.open('', '_blank');
-                                        w.document.write('<html><head><title>{{ addslashes($disease->Name) }} — {{ addslashes($label) }}</title><style>body{font-family:sans-serif;padding:24px;max-width:900px;margin:auto}</style></head><body>' + content + '</body></html>');
+                                        w.document.write('<html><head><title>{{ addslashes($disease->Name) }} — {{ addslashes($label) }}</title><style>body{font-family:sans-serif;padding:24px;max-width:900px;margin:auto} .print-actions{text-align:center;margin:32px 0 24px} .print-actions button{padding:10px 32px;font-size:16px;font-weight:600;color:#fff;background:#2563eb;border:none;border-radius:6px;cursor:pointer} @media print{.print-actions{display:none}}</style></head><body>' + content + '<div class=print-actions><button type=button onclick=window.print()>Print</button></div></body></html>');
                                         w.document.close();
                                         w.focus();
-                                        w.print();
                                     "
                                 >
                                     Print
