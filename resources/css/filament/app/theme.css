@@ -24,13 +24,13 @@
 .waiting-return-row,
 .waiting-return-row .fi-ta-record-content-ctn,
 .waiting-return-row .fi-ta-record-content {
-    background-color: rgb(220 252 231) !important;
+    background-color: rgb(252 231 243) !important;
 }
 
 :is(.dark .waiting-return-row),
 :is(.dark .waiting-return-row) .fi-ta-record-content-ctn,
 :is(.dark .waiting-return-row) .fi-ta-record-content {
-    background-color: rgb(20 83 45 / 0.28) !important;
+    background-color: rgb(131 24 67 / 0.28) !important;
 }
 
 canvas[x-ref="canvas"] {
