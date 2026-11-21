@@ -43,7 +43,20 @@ class PatientForm
                         'Free' => 'Free',
                     ])
                     ->default('Full')
-                    ->required(),
+                    ->required()
+                    ->live()
+                    ->afterStateUpdated(function (string $state, Set $set): void {
+                        if ($state === 'Free') {
+                            $set('consultation_fees_amount', 0);
+                        }
+                    }),
+                TextInput::make('consultation_fees_amount')
+                    ->label('Consultation Fees Amount')
+                    ->numeric()
+                    ->default(0)
+                    ->required()
+                    ->disabled(fn (Get $get): bool => $get('consultation_fees_type') === 'Free')
+                    ->dehydrated(),
                 DatePicker::make('BirthDate')
                     ->displayFormat('d/m/Y')
                     ->format('Y-m-d')
