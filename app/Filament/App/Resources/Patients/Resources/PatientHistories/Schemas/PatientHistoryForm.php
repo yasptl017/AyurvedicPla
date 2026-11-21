@@ -30,6 +30,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\ViewField;
+use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Actions;
 use Filament\Schemas\Components\Fieldset;
 use Filament\Schemas\Components\Grid;
@@ -278,6 +279,7 @@ class PatientHistoryForm
                                                                         'CompanyName' => $data['new_medicine_company'] ?? null,
                                                                         'IsSpecial' => true,
                                                                         'IsPattern' => false,
+                                                                        'ClinicId' => Filament::getTenant()?->Id,
                                                                     ]);
                                                                     $medicineId = $medicine->Id;
                                                                     $medicineName = $medicine->Name;
@@ -554,18 +556,25 @@ class PatientHistoryForm
                                         ->button()
                                         ->visible(fn (Get $get) => $get('other_medicine_mode') === 'new')
                                         ->action(function (Get $get, Set $set) {
-                                            $name = $get('other_new_medicine_name');
+                                            $name = trim((string) $get('other_new_medicine_name'));
+                                            $medicineFormId = $get('other_new_medicine_form_id');
 
-                                            if (! $name) {
+                                            if ($name === '' || blank($medicineFormId)) {
+                                                Notification::make()
+                                                    ->warning()
+                                                    ->title('Enter the medicine name and select a medicine form.')
+                                                    ->send();
+
                                                 return;
                                             }
 
                                             $medicine = Medicine::create([
                                                 'Name' => $name,
-                                                'MedicineFormId' => $get('other_new_medicine_form_id'),
+                                                'MedicineFormId' => $medicineFormId,
                                                 'CompanyName' => $get('other_new_medicine_company') ?? null,
                                                 'IsSpecial' => true,
                                                 'IsPattern' => false,
+                                                'ClinicId' => Filament::getTenant()?->Id,
                                             ]);
 
                                             $prescriptions = $get('Prescriptions') ?? [];

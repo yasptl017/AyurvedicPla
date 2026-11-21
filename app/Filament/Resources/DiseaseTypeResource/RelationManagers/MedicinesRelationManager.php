@@ -97,7 +97,10 @@ class MedicinesRelationManager extends RelationManager
                         ]);
 
                         $this->getOwnerRecord()->medicines()->syncWithoutDetaching([
-                            $medicine->Id => $this->buildNewPivotData($data),
+                            $medicine->Id => [
+                                ...$this->buildNewPivotData($data),
+                                'OrderNumber' => $this->getNextOrderNumber(),
+                            ],
                         ]);
                     }),
                 Action::make('attachMedicines')
