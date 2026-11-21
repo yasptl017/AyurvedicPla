@@ -3,6 +3,7 @@
 namespace App\Filament\App\Widgets;
 
 use App\Models\PatientHistory;
+use App\Support\ExcelExport;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Facades\Filament;
@@ -13,6 +14,7 @@ use Filament\Widgets\TableWidget;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\HtmlString;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class Pharmarcy extends TableWidget
 {
@@ -75,7 +77,11 @@ class Pharmarcy extends TableWidget
                 //
             ])
             ->headerActions([
-                //
+                Action::make('exportExcel')
+                    ->label('Export to Excel')
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->color('success')
+                    ->action(fn (): StreamedResponse => $this->exportToExcel()),
             ])
             ->recordActions([
                 Action::make('view')
@@ -113,5 +119,32 @@ class Pharmarcy extends TableWidget
                     //
                 ]),
             ]);
+    }
+
+    protected function exportToExcel(): StreamedResponse
+    {
+        $timezone = config('app.timezone');
+
+        $rows = $this->getFilteredSortedTableQuery()
+            ->with(['patient', 'diseases', 'symptoms', 'prescriptions.medicine'])
+            ->get()
+            ->map(fn (PatientHistory $record): array => [
+                $record->CreatedDate?->timezone($timezone)->format('d/m/Y h:i A'),
+                trim(implode(' ', array_filter([$record->patient?->FirstName, $record->patient?->MiddleName, $record->patient?->LastName]))),
+                $record->patient?->MobileNo,
+                $record->diseases->pluck('Name')->filter()->implode(', '),
+                $record->symptoms->pluck('Name')->filter()->implode(', '),
+                $record->prescriptions->map(fn ($prescription): ?string => $prescription->medicine?->Name)->filter()->implode(', '),
+                $record->prescriptions->count(),
+                (float) $record->ConsultationFee,
+                (float) $record->MedicinesFee,
+                (float) $record->ConsultationFee + (float) $record->MedicinesFee,
+                $record->NextAppointmentDate?->timezone($timezone)->format('d/m/Y'),
+            ]);
+
+        return ExcelExport::download('pharmacy', [
+            'Visit Date', 'Patient Name', 'Mobile No', 'Diseases', 'Symptoms', 'Medicines',
+            'Medicines Count', 'Consultation Fee', 'Medicines Fee', 'Total', 'Next Appointment',
+        ], $rows);
     }
 }

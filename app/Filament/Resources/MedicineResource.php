@@ -10,7 +10,9 @@ use App\Models\DiseaseTypeMedicine;
 use App\Models\Medicine;
 use App\Models\MedicineForm;
 use App\Models\TimeOfAdministration;
+use App\Support\ExcelExport;
 use BackedEnum;
+use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -28,11 +30,13 @@ use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use UnitEnum;
 
 class MedicineResource extends Resource
@@ -221,6 +225,13 @@ class MedicineResource extends Resource
                     )),
                 TrashedFilter::make(),
             ])
+            ->headerActions([
+                Action::make('exportExcel')
+                    ->label('Export to Excel')
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->color('success')
+                    ->action(fn (HasTable $livewire) => static::exportToExcel($livewire)),
+            ])
             ->recordActions([
                 EditAction::make(),
                 DeleteAction::make(),
@@ -234,6 +245,30 @@ class MedicineResource extends Resource
                     ForceDeleteBulkAction::make(),
                 ]),
             ]);
+    }
+
+    protected static function exportToExcel(HasTable $livewire): StreamedResponse
+    {
+        $rows = $livewire->getFilteredSortedTableQuery()
+            ->with(['diseaseType.disease', 'medicine.medicineForm', 'timeOfAdministration', 'anupana'])
+            ->get()
+            ->map(fn (DiseaseTypeMedicine $record): array => [
+                $record->diseaseType?->disease?->Name,
+                $record->diseaseType?->Name,
+                $record->medicine?->Name,
+                $record->medicine?->medicineForm?->Name,
+                $record->Dose,
+                $record->timeOfAdministration?->Name,
+                $record->Duration,
+                $record->anupana?->Name ?: $record->anupana?->NameGujarati,
+                $record->medicine?->CompanyName,
+                $record->trashed() ? 'Deleted' : 'Active',
+            ]);
+
+        return ExcelExport::download('medicines', [
+            'Disease', 'Disease Type', 'Medicine', 'Medicine Form', 'Dose',
+            'Time Of Administration', 'Quantity', 'Anupana', 'Company Name', 'Status',
+        ], $rows);
     }
 
     public static function getPages(): array

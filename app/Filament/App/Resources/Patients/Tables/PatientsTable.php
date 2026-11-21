@@ -4,7 +4,10 @@ namespace App\Filament\App\Resources\Patients\Tables;
 
 use App\Models\AwaitingPatientEntry;
 use App\Models\Disease;
+use App\Models\Patient;
 use App\Models\PatientHistory;
+use App\Support\ExcelExport;
+use Carbon\Carbon;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
@@ -17,6 +20,7 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Notifications\Notification;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -24,6 +28,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class PatientsTable
 {
@@ -99,6 +104,13 @@ class PatientsTable
                     ->label('Next Appointment')
                     ->date('d/m/Y')
                     ->sortable(),
+            ])
+            ->headerActions([
+                Action::make('exportExcel')
+                    ->label('Export to Excel')
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->color('success')
+                    ->action(fn (HasTable $livewire) => static::exportToExcel($livewire)),
             ])
             ->defaultSort('CreatedDate', 'desc')->filters([
                 Filter::make('visit_date_range')
@@ -245,6 +257,34 @@ class PatientsTable
                     RestoreBulkAction::make(),
                 ]),
             ]);
+    }
+
+    protected static function exportToExcel(HasTable $livewire): StreamedResponse
+    {
+        $formatDate = fn (mixed $date): ?string => filled($date) ? Carbon::parse($date)->format('d/m/Y') : null;
+
+        $rows = $livewire->getFilteredSortedTableQuery()->get()->map(fn (Patient $patient): array => [
+            trim(implode(' ', array_filter([$patient->FirstName, $patient->MiddleName, $patient->LastName]))),
+            $patient->MobileNo,
+            $patient->Email,
+            $patient->Address,
+            $patient->Gender ? Str::ucfirst($patient->Gender) : null,
+            $formatDate($patient->BirthDate),
+            $patient->Weight !== null ? (float) $patient->Weight : null,
+            $patient->latest_diagnosis,
+            $patient->consultation_fees_type,
+            $patient->consultation_fees_amount !== null ? (float) $patient->consultation_fees_amount : null,
+            (int) $patient->patient_histories_count,
+            $formatDate($patient->first_visit_date),
+            $formatDate($patient->last_visit_date),
+            $formatDate($patient->next_appointment_date),
+        ]);
+
+        return ExcelExport::download('patients', [
+            'Name', 'Mobile No', 'Email', 'Address', 'Gender', 'Birth Date', 'Weight',
+            'Diagnosis', 'Consultation Fees', 'Consultation Fees Amount', 'Total Visits',
+            'First Visit', 'Last Visit', 'Next Appointment',
+        ], $rows);
     }
 
     protected static function applyVisitDateRangeFilter(Builder $query, array $data): Builder
