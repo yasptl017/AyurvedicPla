@@ -7,6 +7,8 @@ use App\Support\ExcelExport;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Facades\Filament;
+use Filament\Forms\Components\TextInput;
+use Filament\Notifications\Notification;
 use Filament\Support\Enums\FontWeight;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -84,6 +86,39 @@ class Pharmarcy extends TableWidget
                     ->action(fn (): StreamedResponse => $this->exportToExcel()),
             ])
             ->recordActions([
+                Action::make('addFees')
+                    ->label('Add Fees')
+                    ->button()
+                    ->color('success')
+                    ->icon('heroicon-o-currency-rupee')
+                    ->visible(fn (PatientHistory $record): bool => (float) $record->MedicinesFee <= 0)
+                    ->modalHeading('Add Fees')
+                    ->modalWidth('md')
+                    ->fillForm(fn (PatientHistory $record): array => [
+                        'ConsultationFee' => (float) $record->ConsultationFee ?: null,
+                        'MedicinesFee' => (float) $record->MedicinesFee ?: null,
+                    ])
+                    ->schema([
+                        TextInput::make('ConsultationFee')
+                            ->label('Consultation Fee')
+                            ->numeric()
+                            ->minValue(0),
+                        TextInput::make('MedicinesFee')
+                            ->label('Medicines Fee')
+                            ->numeric()
+                            ->minValue(0),
+                    ])
+                    ->action(function (PatientHistory $record, array $data): void {
+                        $record->update([
+                            'ConsultationFee' => (float) ($data['ConsultationFee'] ?? 0),
+                            'MedicinesFee' => (float) ($data['MedicinesFee'] ?? 0),
+                        ]);
+
+                        Notification::make()
+                            ->success()
+                            ->title('Fees saved')
+                            ->send();
+                    }),
                 Action::make('view')
                     ->button()
                     ->color('info')
